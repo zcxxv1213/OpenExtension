@@ -1,0 +1,24 @@
+{
+    "extensions": [
+        {
+            "name": "动漫之家",
+            "path":"DmzjExtensions",
+            "version": "1"
+        },
+        {
+            "name": "漫画人",
+            "path":"MhrExtensions",
+            "version": "1"
+        },
+        {
+            "name": "皮卡",
+            "path":"PicaExtensions",
+            "version": "1"
+        },
+        {
+            "name": "拷贝",
+            "path":"CopyExtensions",
+            "version": "1"
+        }
+    ]
+}
