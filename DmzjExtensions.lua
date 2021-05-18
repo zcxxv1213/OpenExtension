@@ -268,18 +268,13 @@ function DmzjExtensions.RequestGenreManga(url,page)
 		end
 		globalHelper.OnGenreRequestComplete(list)
 	end
-
-	--[[mangaRequest:Abort();
-	mangaRequest = WebRequest.Get(string.format(url,page));
-	local request = mangaRequest:SendWebRequest();
-	request.completed=request.completed+callBack;
---]]
-	local request = DmzjExtensions.GetRequest(string.format(url,page));
-	--mangaRequest:Dispose();
-	--mangaRequest:Clear();
-	--print(string.format(url,page))
-	--mangaRequest.Uri = mUri(string.format(url,page));
-	--mangaRequest = WebRequest.Get(string.format("http://v2.api.dmzj.com/classify/0/0/%d.json",page - 1));
+	local request = nil;
+	if string.find(url,"rank") ~= -1 then
+		print(string.format(url,page - 1),page)
+		request = DmzjExtensions.GetRequest(string.format(url,page - 1));
+	else
+		request = DmzjExtensions.GetRequest(string.format(url,page));
+	end
 	request.Callback=callBack;
 	request:Send();
 end
@@ -387,6 +382,7 @@ function DmzjExtensions.GetGenreTable()
 		全部 = "https://m.dmzj1.com/classify/0-0-0-0-0-%s.json",
 		连载 = "https://m.dmzj1.com/classify/0-0-1-0-0-%s.json",
 		完结 = "https://m.dmzj1.com/classify/0-0-2-0-0-%s.json",
+		人气日榜 = "https://m.dmzj1.com/rank/0-0-0-%s.json",
 	};
 end
 
