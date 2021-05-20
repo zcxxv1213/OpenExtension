@@ -246,9 +246,9 @@ function DmzjExtensions.RequestGenreManga(url,page)
 		
 		local isJson = jsonSplit.IsJson(resq.Response.DataAsText);
 		print(isJson);
-		if isJson == false then
-			return nil;
-		end
+		--if isJson == false then
+		--	return nil;
+		--end
 		local info = json.decode(resq.Response.DataAsText)
 		local list = {};
 		for k,v in ipairs(info) do
