@@ -20,7 +20,7 @@ local chapterData = ChapterData;
 local DmzjExtensions = {};
 
 function DmzjExtensions.GetVersion()
-	return 1;
+	return 2;
 end
 
 function DmzjExtensions.GetType()
@@ -260,7 +260,7 @@ function DmzjExtensions.RequestGenreManga(url,page)
 			tempData.cover = string.format("https://images.dmzj1.com/%s",v["cover"])
 			tempData.types = v["types"]
 			tempData.last_updatetime = v["last_updatetime"]
-			tempData.num = v["num"]
+			--tempData.num = v["num"]
 			
 			tempData.url = string.format("/comic/comic_%d.json?version=2.7.019", v.id)
 			tempData.source = "2884190037559093788";
@@ -382,6 +382,7 @@ function DmzjExtensions.GetGenreTable()
 		全部 = "https://m.dmzj1.com/classify/0-0-0-0-0-%s.json",
 		连载 = "https://m.dmzj1.com/classify/0-0-1-0-0-%s.json",
 		完结 = "https://m.dmzj1.com/classify/0-0-2-0-0-%s.json",
+		最新 = "https://m.dmzj1.com/latest/%s.json",
 		人气日榜 = "https://m.dmzj1.com/rank/0-0-0-%s.json",
 	};
 end
