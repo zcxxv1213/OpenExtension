@@ -153,6 +153,7 @@ function PicaExtensions.RequestMangaDetail(url)
 			detailData.last_updatetime =  PicaExtensions.CaculateTime(info["data"]["comic"]["updated_at"]);
 			detailData.source = "9988005021315885225";
 			detailData.authors = info["data"]["comic"]["author"];
+			detailData.description = info["data"]["comic"]["description"]
 			if info["data"]["comic"]["finished"] == true then
 				detailData.status = "完结";
 			else
@@ -442,6 +443,7 @@ function PicaExtensions.Update(resq,url)
 		detailData.last_updatetime =  PicaExtensions.CaculateTime(info["data"]["comic"]["updated_at"]);
 		detailData.source = "9988005021315885225";
 		detailData.authors = info["data"]["comic"]["author"];
+		detailData.description = info["data"]["comic"]["description"]
 		if info["data"]["comic"]["finished"] == true then
 			detailData.status = "完结";
 		else

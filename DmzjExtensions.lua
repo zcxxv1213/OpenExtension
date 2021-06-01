@@ -130,7 +130,7 @@ function DmzjExtensions.RequestMangaDetail(url)
 		detailData.authors = info_1["authors"];
 		detailData.status = info_1["status"];
 		detailData.types = info_1["types"];
-		
+		detailData.description = info_1["description"]
 		local info_2 = info["data"]["list"]
 		local tempChapter = chapterList();
 		detailData.chapters:Add(tempChapter)
@@ -150,6 +150,7 @@ function DmzjExtensions.RequestMangaDetail(url)
 	--url = stringHelper.Replace(url,"?version=2.7.019","")
 	print(url)
 	local cid = string.match(url, "%d+")
+	print(string.format("https://api.dmzj.com/dynamic/comicinfo/%s",cid .. ".json"))
 	local request = DmzjExtensions.GetRequest(string.format("https://api.dmzj.com/dynamic/comicinfo/%s",cid .. ".json"));
 	request.Callback=callBack;
 	request:Send();
@@ -359,7 +360,7 @@ function DmzjExtensions.Update(resq,url)
 		detailData.authors = info_1["authors"];
 		detailData.status = info_1["status"];
 		detailData.types = info_1["types"];
-		
+		detailData.description = info_1["description"]
 		local info_2 = info["data"]["list"]
 		local tempChapter = chapterList();
 		detailData.chapters:Add(tempChapter)

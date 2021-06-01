@@ -124,7 +124,7 @@ function MhrExtensions.RequestMangaDetail(url)
 		local timestamp = os.time({year=y, month = m, day = d, hour = _hour, min = _min, sec = _sec});
 		detailData.last_updatetime = timestamp;
 		detailData.source = "3616827811449702173";
-
+		detailData.description = info["response"]["mangaIntro"];
 		detailData.authors = info["response"]["mangaAuthor"];
 
 		detailData.types = info["response"]["mangaTheme"];
@@ -557,7 +557,8 @@ function MhrExtensions.Update(resq,url)
 		detailData.last_updatetime = timestamp;
 		detailData.source = "3616827811449702173";
 		detailData.authors = info["response"]["mangaAuthor"];
-
+		detailData.description = info["response"]["mangaIntro"];
+		print(info["response"]["mangaIntro"]);
 		detailData.types = info["response"]["mangaTheme"];
 		
 		for k,v in pairs(info["response"]["mangaWords"]) do
