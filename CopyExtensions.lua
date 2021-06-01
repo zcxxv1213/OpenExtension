@@ -94,12 +94,10 @@ function CopyExtensions.RequestMangaDetail(url)
 		local chapterJsonString = magicMethod.AesDecrypt(datas,disposablePass,prePart);
 		local isJson = jsonSplit.IsJson(chapterJsonString);
 		print(chapterJsonString)
-		print(isJson);
 		if isJson == false then
 			return nil;
 		end
 		local info = json.decode(chapterJsonString)
-		print(info)
 		local tempKey={}
 		for k,v in pairs(info) do
 			table.insert(tempKey,k);
@@ -107,26 +105,30 @@ function CopyExtensions.RequestMangaDetail(url)
 		--local rTable = ReverseTable(tempKey);
 
 		for k,v in pairs(tempKey) do
+			print(k,v)
 			if info[v]["groups"]~=nil then
 				if info[v]["groups"]["全部"]~=nil then
 					local tempChapter = chapterList();
 					detailData.chapters:Add(tempChapter)
-					for j,s in pairs (info[v]["groups"]["全部"]) do
+					local data = info[v]["groups"]["全部"];
+					for i = #info[v]["groups"]["全部"],1 , -1 do
+						print(i)
 						
 						local tempData = chapterData();
-						print(s["comic_id"])
-						tempData.chapter_id = s["comic_id"].."";
-						tempData.chapter_title = s["name"];
-						local times = Split(s["datetime_created"],"-");
+						tempData.chapter_id = data[i]["comic_id"].."";
+						tempData.chapter_title = data[i]["name"];
+						local times = Split(data[i]["datetime_created"],"-");
 						local timestamp = os.time({day=times[3],month=times[2],year=times[1], hour =0, min = 0, sec =0});
 						tempData.updatetime = timestamp;
-						tempData.url = string.format("/comic/%s/chapter/%s", s["comic_path_word"], s["uuid"])
+						tempData.url = string.format("/comic/%s/chapter/%s", data[i]["comic_path_word"], data[i]["uuid"])
 						tempChapter.data:Add(tempData);
 						print(tempData.url ,tempData.chapter_id,tempData.updatetime);
 					end
 				end
 			end
 		end
+
+		detailData.chapters:Reverse();
 		globalHelper.OnMangaDetailPhraseComplete(detailData)
 	end
 
