@@ -285,14 +285,10 @@ function DmzjExtensions.RequestMangaPageList(url,detail,chapterDa)
 		if resq.State == httpStates.Aborted or resq.State == httpStates.Error or  resq.State == httpStates.ConnectionTimedOut 
 		or  resq.State == httpStates.TimedOut 
 		then
+			DmzjExtensions.OnNewChapterApiFail(url,detail,chapterDa)
 			return;
 		end
 		print(resq.Response.DataAsText)
-		--[[local isJson = jsonSplit.IsJson(resq.Response.DataAsText);
-		print(isJson);
-		if isJson == false then
-			return nil;
-		end--]]
 		local info = json.decode(resq.Response.DataAsText)
 		print(info)
 		local tempData = pageAllData.New();
@@ -308,20 +304,39 @@ function DmzjExtensions.RequestMangaPageList(url,detail,chapterDa)
 		end
 		globalHelper.OnMangaPagesPhraseComplete(url,tempData,detail,chapterDa)
 	end
-	--[[mangaRequest:Abort();
-	mangaRequest = WebRequest.Get(url);
-	local request = mangaRequest:SendWebRequest();
-	request.completed=request.completed+callBack;--]]
 	print(url)
 	local request = DmzjExtensions.GetRequest(url);
-	request.Callback=callBack;
+	request.Callback = callBack;
+	request:Send();
+end
+
+function DmzjExtensions.OnNewChapterApiFail(url,detail,chapterDa)
+	local callBack = function( resq,resp)
+		if resq.State == httpStates.Aborted or resq.State == httpStates.Error or  resq.State == httpStates.ConnectionTimedOut 
+		or  resq.State == httpStates.TimedOut 
+		then
+			return;
+		end
+		print(resq.Response.DataAsText)
+		local info = json.decode(resq.Response.DataAsText)
+		local tempData = pageAllData.New();
+		tempData.source = "2884190037559093788";
+		local data = PageData.New();
+		tempData.chapter = data;
+
+		data.chapter_name = info["chapter_name"];
+		for k,v in ipairs ( info["page_url"]) do 
+			print(v)
+			data.page_url:Add(v);
+		end
+		globalHelper.OnMangaPagesPhraseComplete(url,tempData,detail,chapterDa)
+	end
+	print(url,chapterDa)
+	local tempUrl = string.format("https://m.dmzj.com/chapinfo/%s/%s.html",detail.id,chapterDa.chapter_id)
+	local request = DmzjExtensions.GetRequest(tempUrl);
+	request.Callback = callBack;
 	request:Send();
 
-	--[[mangaRequest:Dispose();
-	mangaRequest:Clear();
-	mangaRequest.Uri = mUri(url);
-	mangaRequest.Callback=callBack;
-	mangaRequest:Send();--]]
 end
 
 function DmzjExtensions.StrightGetMangaDetail(mangaId)
