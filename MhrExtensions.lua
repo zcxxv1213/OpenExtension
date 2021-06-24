@@ -436,7 +436,12 @@ function MhrExtensions.RequestGenreManga(url,page)
 	--table.insert(tempTable,{["subCategoryId"]="0"});
 	table.insert(tempTable,{["start"]=string.format("%s",pageSize*(page - 1))});
 	table.insert(tempTable,{["limit"]=string.format("%s",pageSize)});
-	table.insert(tempTable,{["sort"]="0"});
+
+	if string.find(url,"_lastest") then
+		table.insert(tempTable,{["sort"]="1"});
+	else
+		table.insert(tempTable,{["sort"]="0"});
+	end
 
 	local extra = MhrExtensions.GenerateExtraInfo(tempTable);
 	--local extra_2 = MhrExtensions.UrlEncode(extra);
@@ -637,13 +642,9 @@ function MhrExtensions.Update(resq,url)
 end
 
 function MhrExtensions.GetGenreTable()
-	local allTable = {};
-	table.insert(allTable,{["subCategoryType"]="0"});
-	table.insert(allTable,{["subCategoryId"]="0"});
 	return {
 		全部 = "subCategoryType_0_subCategoryId_0",
-		--[[连载 = "https://mangaapi.manhuaren.com/classify/0-0-1-0-0-%s.json",
-		完结 = "https://mangaapi.manhuaren.com/classify/0-0-2-0-0-%s.json",--]]
+		最新 = "subCategoryType_0_subCategoryId_0_lastest",
 	};
 end
 

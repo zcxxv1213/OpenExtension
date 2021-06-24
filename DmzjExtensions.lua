@@ -258,7 +258,7 @@ function DmzjExtensions.RequestGenreManga(url,page)
 			tempData.title = v["name"]
 			tempData.authors = v["authors"]
 			tempData.status = v["status"]
-			tempData.cover = string.format("https://images.dmzj1.com/%s",v["cover"])
+			tempData.cover = string.format("https://images.dmzj.com/%s",v["cover"])
 			tempData.types = v["types"]
 			tempData.last_updatetime = v["last_updatetime"]
 			--tempData.num = v["num"]
@@ -276,6 +276,7 @@ function DmzjExtensions.RequestGenreManga(url,page)
 	else
 		request = DmzjExtensions.GetRequest(string.format(url,page));
 	end
+	print(url)
 	request.Callback=callBack;
 	request:Send();
 end
@@ -395,11 +396,11 @@ end
 
 function DmzjExtensions.GetGenreTable()
 	return {
-		全部 = "https://m.dmzj1.com/classify/0-0-0-0-0-%s.json",
-		连载 = "https://m.dmzj1.com/classify/0-0-1-0-0-%s.json",
-		完结 = "https://m.dmzj1.com/classify/0-0-2-0-0-%s.json",
-		最新 = "https://m.dmzj1.com/latest/%s.json",
-		人气日榜 = "https://m.dmzj1.com/rank/0-0-0-%s.json",
+		全部 = "https://m.dmzj.com/classify/0-0-0-0-0-%s.json",
+		连载 = "https://m.dmzj.com/classify/0-0-1-0-0-%s.json",
+		完结 = "https://m.dmzj.com/classify/0-0-2-0-0-%s.json",
+		最新 = "https://m.dmzj.com/latest/%s.json",
+		人气日榜 = "https://m.dmzj.com/rank/0-0-0-%s.json",
 	};
 end
 
