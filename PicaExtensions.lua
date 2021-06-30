@@ -542,7 +542,7 @@ function PicaExtensions.GetSettingDic()
 			最多爱心="ld",
 			最多指名="vd",
 		},
-		text_proxy = 0;
+		text_proxyPort = 0;
 	};
 	return table;
 end
@@ -550,7 +550,7 @@ end
 function PicaExtensions.GetCurrentSettingValue(pa)
 	if pa == "sortype" then
 		return sortType  .. "";
-	elseif pa == "proxy" then
+	elseif pa == "proxyPort" then
 		return proxyPort .. "";
 	end
 end
@@ -559,7 +559,7 @@ function PicaExtensions.SetSettingValue(key,value)
 	if key == "sortype" then
 		sortType = value;
 		playerPrefs.SetString("PicaSortType",sortType)
-	elseif key == "proxy" then
+	elseif key == "proxyPort" then
 		proxyPort = value + 0 ;
 		playerPrefs.SetInt("PicaPort",proxyPort)
 	end

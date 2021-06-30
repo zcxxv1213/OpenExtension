@@ -14,10 +14,11 @@ local pageAllData = PageAllData;
 local mangaDetail = MangaDetail;
 local chapterList = ChapterList;
 local chapterData = ChapterData;
---local mList = System.Collections.Generic.List<MangaData>;
+local playerPrefs = UnityEngine.PlayerPrefs;
+local mHttpProxy = BestHTTP.HTTPProxy;
 local pageSize = 20
 local MhrExtensions = {};
-
+local proxyPort = 0;
 function MhrExtensions.GetVersion()
 	return 1;
 end
@@ -36,6 +37,9 @@ end
 
 function MhrExtensions.Init()
 
+	if playerPrefs.HasKey("MhrPort") then
+		proxyPort = playerPrefs.GetInt("MhrPort")
+	end
 end
 
 function MhrExtensions.RequestPopularManga(page)
@@ -100,33 +104,55 @@ function MhrExtensions.RequestPopularManga(page)
 end
 
 function MhrExtensions.RequestMangaDetail(url)
+	print(url)
+	local strs = Split(url,"=");
+	local tempTable = {};
+	table.insert(tempTable,{["mangaId"]=string.format("%s",strs[2])});
+
+	local extra = MhrExtensions.GenerateExtraInfo(tempTable);
+	--local extra_2 = MhrExtensions.UrlEncode(extra);
+	print(string.format("http://mangaapi.manhuaren.com/v1/manga/getDetail?%s",extra));
+	local request = MhrExtensions.GetRequest(string.format("http://mangaapi.manhuaren.com/v1/manga/getDetail?%s",extra));
+	request.Callback = MhrExtensions.OnMangaDetailCallBack;
+	request:Send();
+end
+function MhrExtensions.OnMangaDetailCallBack(resq,resp)
+	print(resq.State)
+	if resq.State == httpStates.Aborted or resq.State == httpStates.Error or  resq.State == httpStates.ConnectionTimedOut 
+		or  resq.State == httpStates.TimedOut 
+	then
+		print("Error")
+		return;
+	end
+	print(resq.Response.DataAsText);
+	local info = json.decode(resq.Response.DataAsText)
+	if info["errorResponse"] ~=nil then 
+		print(info["errorResponse"] )
+		return
+	end
+
+	local detailData = mangaDetail.New();
+	detailData.id = info["response"]["mangaId"];
+	detailData.title = info["response"]["mangaName"];
+	detailData.cover = info["response"]["mangaPicimageUrl"];
+	detailData.url = string.format("/v1/manga/getRead?mangaId=%s", detailData.id) 
+	local _, _, y, m, d, _hour, _min, _sec = string.find(info["response"]["mangaNewestTime"], "(%d+)-(%d+)-(%d+)%s*(%d+):(%d+):(%d+)");
+	local timestamp = os.time({year=y, month = m, day = d, hour = _hour, min = _min, sec = _sec});
+	detailData.last_updatetime = timestamp;
+	detailData.source = "3616827811449702173";
+	detailData.description = info["response"]["mangaIntro"];
+	detailData.authors = info["response"]["mangaAuthor"];
 	local callBack = function( resq,resp)
-		print(resq.State)
 		if resq.State == httpStates.Aborted or resq.State == httpStates.Error or  resq.State == httpStates.ConnectionTimedOut 
 		or  resq.State == httpStates.TimedOut 
 		then
-			print("Error")
 			return;
 		end
-		print(resq.Response.DataAsText);
 		local info = json.decode(resq.Response.DataAsText)
 		if info["errorResponse"] ~=nil then 
 			print(info["errorResponse"] )
 			return
 		end
-
-		local detailData = mangaDetail.New();
-		detailData.id = info["response"]["mangaId"];
-		detailData.title = info["response"]["mangaName"];
-		detailData.cover = info["response"]["mangaPicimageUrl"];
-		detailData.url = string.format("/v1/manga/getRead?mangaId=%s", detailData.id) 
-		local _, _, y, m, d, _hour, _min, _sec = string.find(info["response"]["mangaNewestTime"], "(%d+)-(%d+)-(%d+)%s*(%d+):(%d+):(%d+)");
-		local timestamp = os.time({year=y, month = m, day = d, hour = _hour, min = _min, sec = _sec});
-		detailData.last_updatetime = timestamp;
-		detailData.source = "3616827811449702173";
-		detailData.description = info["response"]["mangaIntro"];
-		detailData.authors = info["response"]["mangaAuthor"];
-
 		detailData.types = info["response"]["mangaTheme"];
 		for k,v in pairs(info["response"]["mangaWords"]) do
 			local tempChapter = chapterList();
@@ -201,19 +227,14 @@ function MhrExtensions.RequestMangaDetail(url)
 		end
 		globalHelper.OnMangaDetailPhraseComplete(detailData)
 	end
-	print(url)
-
-	local strs = Split(url,"=");
 	local tempTable = {};
-	table.insert(tempTable,{["mangaId"]=string.format("%s",strs[2])});
+	table.insert(tempTable,{["mangaId"]=string.format("%s",detailData.id )});
 
 	local extra = MhrExtensions.GenerateExtraInfo(tempTable);
 	--local extra_2 = MhrExtensions.UrlEncode(extra);
 	print(string.format("http://mangaapi.manhuaren.com/v1/manga/getDetail?%s",extra));
-	local request = MhrExtensions.GetRequest(string.format("http://mangaapi.manhuaren.com/v1/manga/getDetail?%s",extra));
-
-	--local request = MhrExtensions.GetRequest(url);
-	request.Callback=callBack;
+	local request = MhrExtensions.GetRequest(string.format("http://mangaapi.manhuaren.com/v1/manga/getSections?%s",extra));
+	request.Callback = callBack;
 	request:Send();
 end
 
@@ -267,13 +288,22 @@ function MhrExtensions.GetRequest(url)
 	print(uri);
 	local mangaRequest = mHTTPRequest(nil);
 	mangaRequest.Uri = uri;
-	mangaRequest:SetHeader("X-Yq-Yqci", "{\"le\": \"zh\"}");
-	
+	--mangaRequest:SetHeader("X-Yq-Yqci", "{\"le\": \"zh\"}");
+	--mangaRequest:SetHeader("X-Yq-Yqci", "{\"cy\": \"TW\",\"le\": \"zh\"}");
+	--mangaRequest:SetHeader("X-Yq-Yqpp", "{\"flg\":"",\"ac\":\"86\",\"laut\":\"1\",\"fcc\":"",\"flcc\":"",\"ciso\":\"cn\",\"lcc\":\"CN\",\"lot\":\"113.382521\",\"lcn\":\"%E4%B8%AD%E5%9B%BD\",\"flat\":"",\"flot\":"",\"lat\":\"23.13073\"}");
 	mangaRequest:SetHeader("User-Agent","okhttp/3.11.0");
 	mangaRequest:SetHeader("clubReferer", "http://mangaapi.manhuaren.com/");
 
 	mangaRequest:SetHeader("referer", "http://www.dm5.com/dm5api/");
+
+	mangaRequest:SetHeader("Accept-Language", "ja");
 	mangaRequest.Tag = uri;
+
+	if proxyPort ~= 0 then
+		local proxyUri = mUri(string.format("http://localhost:%d",proxyPort));
+		mangaRequest.Proxy = mHttpProxy(proxyUri)
+	end
+
 	return mangaRequest;
 end
 
@@ -297,6 +327,7 @@ function MhrExtensions.GenerateExtraInfo(queryTable)
 		end
 		
 	end
+	
 	--[[table.insert(extable,{["start"]="9"});
 	table.insert(extable,{["limit"]="9"});--]]
 	table.insert(extable,{["gsm"]="md5"});
@@ -304,6 +335,18 @@ function MhrExtensions.GenerateExtraInfo(queryTable)
 	table.insert(extable,{["gts"]=os.date("%Y-%m-%d+%H:%M:%S")});
 	table.insert(extable,{["gak"]="android_manhuaren2"});
 	table.insert(extable,{["gat"]=""});
+
+	table.insert(extable,{["glbsaut"]="1"});
+	table.insert(extable,{["gov"]="29_10"});
+	table.insert(extable,{["gdi"]="868233035308236"});
+	table.insert(extable,{["gciso"]="tw"});
+	table.insert(extable,{["glcc"]="TW"});
+	table.insert(extable,{["gle"]="tw"});
+	table.insert(extable,{["glcn"]="中國"});
+	table.insert(extable,{["gcy"]="TW"});
+	table.insert(extable,{["gnt"]="0"});
+	table.insert(extable,{["gst"]="0"});
+
 	table.insert(extable,{["gaui"]="191909801"});
 	table.insert(extable,{["gui"]="191909801"});
 	table.insert(extable,{["gut"]="0"});
@@ -324,6 +367,8 @@ function MhrExtensions.GenerateExtraInfo(queryTable)
 			str = str..s;
 			str = str.."=";
 			if s == "gts" then
+				str = str ..MhrExtensions.UrlEncode(j);
+			elseif s =="glcn" then
 				str = str ..MhrExtensions.UrlEncode(j);
 			else
 				str = str ..j;
@@ -376,15 +421,6 @@ end
 
 function MhrExtensions.GetTextureRequest(url)
 	return MhrExtensions.GetRequest(url);
-	--[[local mangaTextureRequest = TextureRequest.GetTexture(url,false);
-	mangaTextureRequest:SetRequestHeader("User-Agent","Mozilla/5.0 (X11; Linux x86_64) " ..
-		"AppleWebKit/537.36 (KHTML, like Gecko) " ..
-		"Chrome/56.0.2924.87 " ..
-		"Safari/537.36 "..
-		"Tachiyomi/1.0");
-
-	mangaTextureRequest:SetRequestHeader("referer", "http://www.dmzj.com/");
-	return mangaTextureRequest;--]]
 end
 function MhrExtensions.RequestGenreManga(url,page)
 	local callBack = function( resq,resp)
@@ -646,6 +682,28 @@ function MhrExtensions.GetGenreTable()
 		全部 = "subCategoryType_0_subCategoryId_0",
 		最新 = "subCategoryType_0_subCategoryId_0_lastest",
 	};
+end
+
+
+function MhrExtensions.GetSettingDic()
+	local table = {
+		text_proxyPort = 0;
+	};
+	return table;
+end
+
+function MhrExtensions.GetCurrentSettingValue(pa)
+	if pa == "proxyPort" then
+		return proxyPort .. "";
+	end
+end
+
+function MhrExtensions.SetSettingValue(key,value)
+	if key == "proxyPort" then
+		proxyPort = value + 0 ;
+		playerPrefs.SetInt("MhrPort",proxyPort)
+	end
+	print(key,value)
 end
 
 return MhrExtensions;

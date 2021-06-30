@@ -2,8 +2,7 @@
 --local bjson = BestHTTP.JSON.Json
 local jsonSplit = JsonSplit;
 local GameObject = UnityEngine.GameObject
---local WebRequest = UnityEngine.Networking.UnityWebRequest;
---local TextureRequest = UnityEngine.Networking.UnityWebRequestTexture;
+local playerPrefs = UnityEngine.PlayerPrefs;
 local mHTTPRequest = BestHTTP.HTTPRequest;
 local httpStates = BestHTTP.HTTPRequestStates;
 local mUri = System.Uri;
@@ -17,10 +16,10 @@ local pageAllData = PageAllData;
 local mangaDetail = MangaDetail;
 local chapterList = ChapterList;
 local chapterData = ChapterData;
---local mList = System.Collections.Generic.List<MangaData>;
+local mHttpProxy = BestHTTP.HTTPProxy;
 local pageCount = 50;
 local CopyExtensions = {};
-
+local proxyPort = 0;
 function CopyExtensions.GetVersion()
 	return 1;
 end
@@ -50,6 +49,10 @@ function CopyExtensions.Init()
 		"Safari/537.36 ");
 
 		mangaRequest:SetHeader("Referer", "https://www.copymanga.com");
+	end
+
+	if playerPrefs.HasKey("CopyPort") then
+		proxyPort = playerPrefs.GetInt("CopyPort")
 	end
 end
 
@@ -228,6 +231,12 @@ function CopyExtensions.GetRequest(url)
 
 	mangaTextureRequest:SetHeader("Referer", "https://www.copymanga.com");
 	mangaTextureRequest.Tag = url;
+
+	if proxyPort ~= 0 then
+		local proxyUri = mUri(string.format("http://localhost:%d",proxyPort));
+		mangaTextureRequest.Proxy = mHttpProxy(proxyUri)
+	end
+
 	return mangaTextureRequest;
 end
 
@@ -433,4 +442,28 @@ function ReverseTable(reverseTab)
     end
     return tmp
 end
+
+function CopyExtensions.GetSettingDic()
+	local table = {
+		text_proxyPort = 0;
+	};
+	return table;
+end
+
+function CopyExtensions.GetCurrentSettingValue(pa)
+	if pa == "sortype" then
+		return sortType  .. "";
+	elseif pa == "proxyPort" then
+		return proxyPort .. "";
+	end
+end
+
+function CopyExtensions.SetSettingValue(key,value)
+	if key == "proxyPort" then
+		proxyPort = value + 0 ;
+		playerPrefs.SetInt("CopyPort",proxyPort)
+	end
+	print(key,value)
+end
+
 return CopyExtensions;
