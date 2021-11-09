@@ -17,6 +17,7 @@ local mangaDetail = MangaDetail;
 local chapterList = ChapterList;
 local chapterData = ChapterData;
 local mHttpProxy = BestHTTP.HTTPProxy;
+local jsHelper = JSHelper;
 local pageCount = 50;
 local CopyExtensions = {};
 local proxyPort = 0;
@@ -64,12 +65,12 @@ function CopyExtensions.RequestMangaDetail(url)
 			print("Error")
 			return;
 		end
+		print(url);
 		print(resq.Response.DataAsText)
 		local detailData = mangaDetail.New();
 		local document = htmlHelper.ParseHTMLStr(resq.Response.DataAsText);
 		local selectElement = htmlHelper.DocumentQuerySelectItems(document,"div.comicParticulars-title-right > ul > li");
 		detailData.title = selectElement[0].TextContent;
-		
 		detailData.url = url;
 		selectElement = htmlHelper.DocumentQuerySelectItems(document,"div.comicParticulars-title-left img");
 		detailData.cover = selectElement[0]:GetAttribute("data-src");
@@ -83,66 +84,75 @@ function CopyExtensions.RequestMangaDetail(url)
 		local timestamp = os.time({day=times[3],month=times[2],year=times[1], hour =0, min = 0, sec =0});
 		detailData.last_updatetime = timestamp
 		detailData.status = selectElement[7].TextContent;
-
 		detailData.source = "6696312508930833206";
-
-		selectElement = htmlHelper.DocumentQuerySelectItems(document,"div.disposableData");
-		local disposableData = selectElement[0]:GetAttribute("disposable");
-
-		selectElement = htmlHelper.DocumentQuerySelectItems(document,"div.disposablePass");
-		local disposablePass = selectElement[0]:GetAttribute("disposable");
-		local prePart = string.sub(disposableData,1,16); 
-		local postPart = string.sub(disposableData,17,#disposableData);
-		local datas = magicMethod.hexToBytes(postPart);
-		local chapterJsonString = magicMethod.AesDecrypt(datas,disposablePass,prePart);
-		local isJson = jsonSplit.IsJson(chapterJsonString);
-		print(chapterJsonString)
-		if isJson == false then
-			return nil;
-		end
-		local info = json.decode(chapterJsonString)
-		local tempKey={}
-		for k,v in pairs(info) do
-			table.insert(tempKey,k);
-		end
-		--local rTable = ReverseTable(tempKey);
-
-		for k,v in pairs(tempKey) do
-			print(k,v)
-			if info[v]["groups"]~=nil then
-				if info[v]["groups"]["全部"]~=nil then
-					local tempChapter = chapterList();
-					detailData.chapters:Add(tempChapter)
-					local data = info[v]["groups"]["全部"];
-					for i = #info[v]["groups"]["全部"],1 , -1 do
-						print(i)
-						
-						local tempData = chapterData();
-						tempData.chapter_id = data[i]["comic_id"].."";
-						tempData.chapter_title = data[i]["name"];
-						local times = Split(data[i]["datetime_created"],"-");
-						local timestamp = os.time({day=times[3],month=times[2],year=times[1], hour =0, min = 0, sec =0});
-						tempData.updatetime = timestamp;
-						tempData.url = string.format("/comic/%s/chapter/%s", data[i]["comic_path_word"], data[i]["uuid"])
-						tempChapter.data:Add(tempData);
-						print(tempData.url ,tempData.chapter_id,tempData.updatetime);
-					end
-				end
+		--selectElement = htmlHelper.DocumentQuerySelectItems(document,"div.disposableData");
+		--print(selectElement)
+		--local disposableData = selectElement[0]:GetAttribute("disposable");
+		--print(disposableData)
+		print(string.format("https://www.copymanga.com%s/chapters",url))
+		local request = CopyExtensions.GetRequest(string.format("https://www.copymanga.com%s/chapters",url));
+		local onDetailCallBack = function( resq,resp)
+			if resq.State == httpStates.Aborted or resq.State == httpStates.Error or  resq.State == httpStates.ConnectionTimedOut 
+			or  resq.State == httpStates.TimedOut 
+			then
+				return;
 			end
-		end
+			print(resq.Response.DataAsText);
 
-		detailData.chapters:Reverse();
-		globalHelper.OnMangaDetailPhraseComplete(detailData)
+			local disposableData = "xxxmanga.woo.key";
+			--selectElement = htmlHelper.DocumentQuerySelectItems(document,"div.disposablePass");
+			--local disposablePass = selectElement[0]:GetAttribute("disposable");
+			local disposablePass = "QEpj2gFKA5y9tUNW";
+			--local prePart = string.sub(disposableData,1,16); 
+			--local postPart = string.sub(disposableData,17,#disposableData);
+			--local datas = magicMethod.hexToBytes(postPart);
+			local key = disposableData;
+			local iv = disposablePass;
+			local resultJson = json.decode(resq.Response.DataAsText)['results']
+			local subPart = string.sub(resultJson,17,#resultJson); 
+			print(subPart);
+			
+			local datas = magicMethod.hexToBytes(subPart);
+			--local chapterJsonString = magicMethod.AesDecrypt(datas,disposablePass,prePart);
+			local chapterJsonString = magicMethod.AesDecrypt(datas,key,iv);
+			--local chapterJsonString = magicMethod.AesDecrypt(resq.Response.DataAsText,key,iv)
+			print(chapterJsonString)
+			local regexStr = stringHelper.RexMatch(chapterJsonString,"chapters\":","],");
+			regexStr = regexStr .. "]";
+			print(regexStr);
+			local info = json.decode(regexStr)
+			local tempKey={}
+			for k,v in pairs(info) do
+				print(k,v)
+				table.insert(tempKey,k);
+			end
+			--local rTable = ReverseTable(tempKey);
+			local tempChapter = chapterList();
+			detailData.chapters:Add(tempChapter)
+			for k,v in pairs(info) do
+				local tempData = chapterData();
+				--tempData.chapter_id = v["comic_id"].."";
+				tempData.chapter_title = v["name"];
+				--local times = Split(data[i]["datetime_created"],"-");
+				--local timestamp = os.time({day=times[3],month=times[2],year=times[1], hour =0, min = 0, sec =0});
+				--tempData.updatetime = timestamp;
+				tempData.url = string.format(url.."/chapter/%s", v["id"])
+				tempChapter.data:Add(tempData);
+				print(tempData.url ,tempData.chapter_id,tempData.updatetime);
+			end
+			tempChapter.data:Reverse();
+			--detailData.chapters:Reverse();
+			globalHelper.OnMangaDetailPhraseComplete(detailData)
+			end
+			request.Callback = onDetailCallBack;
+			request:Send();
+		
 	end
 
 	print(url)
 	local request = CopyExtensions.GetRequest(string.format("https://www.copymanga.com%s",url));
 	request.Callback=callBack;
 	request:Send();
-end
-
-function CopyExtensions.AesDecrypt(datas,disposablePass,prePart)
-	
 end
 
 function CopyExtensions.RequestSearchManga(query)
@@ -166,9 +176,14 @@ function CopyExtensions.RequestSearchManga(query)
 					checkBool = true;
 				end
 			end)
-
+			print(checkBool)
 			if checkBool then
 				local info = json.decode(resq.Response.DataAsText)
+				print(info,resq.Response.DataAsText)
+				for k,v in ipairs(info) do
+				print(k,v)
+				end
+
 				local list={};
 				if info["results"]["list"] ~=nil then
 					local comicArray = info["results"]["list"];
@@ -216,8 +231,10 @@ function CopyExtensions.RequestSearchManga(query)
 			
 		end
 	end
-	print(string.format("https://www.copymanga.com/api/kb/web/search/comics?limit=%s&offset=%s&platform=2&q=%s&q_type=",30,0,query));
-	local request = CopyExtensions.GetRequest(string.format("https://www.copymanga.com/api/kb/web/search/comics?limit=%s&offset=%s&platform=2&q=%s&q_type=",30,0,query));
+	print(string.format("https://www.copymanga.com/api/kb/web/searchs/comics?limit=%s&offset=%s&platform=2&q=%s&q_type=",30,0,query));
+	local htmlRequest = (string.format("https://www.copymanga.com/api/kb/web/searchs/comics?limit=%s&offset=%s&platform=2&q=%s&q_type=",30,0,query));
+	print()
+	local request = CopyExtensions.GetRequest(string.format("https://www.copymanga.com/api/kb/web/searchs/comics?limit=%s&offset=%s&platform=2&q=%s&q_type=",30,0,query));
 	request.Callback=callBack;
 	request:Send();
 end
@@ -298,25 +315,32 @@ function CopyExtensions.RequestMangaPageList(url,detail,chapterDa)
 		tempData.chapter = data;
 
 		local document = htmlHelper.ParseHTMLStr(resq.Response.DataAsText);
-		local selectElement = htmlHelper.DocumentQuerySelectItems(document,"div.disposableData");
+		local imageDatas = htmlHelper.DocumentLinqSelectItems(document,"imageData");
+		--[[local selectElement = htmlHelper.DocumentQuerySelectItems(document,"div.disposableData");
 		local disposableData = selectElement[0]:GetAttribute("disposable");
 		selectElement = htmlHelper.DocumentQuerySelectItems(document,"div.disposablePass");
 		local disposablePass = selectElement[0]:GetAttribute("disposable");
 		local prePart = string.sub(disposableData,1,16); 
 		local postPart = string.sub(disposableData,17,#disposableData);
-		local datas = magicMethod.hexToBytes(postPart);
-		local chapterJsonString = magicMethod.AesDecrypt(datas,disposablePass,prePart);
-		local isJson = jsonSplit.IsJson(chapterJsonString);
-		if isJson == false then
-			return nil;
-		end
-		local info = json.decode(chapterJsonString)
+		local datas = magicMethod.hexToBytes(postPart);--]]
 
-		print(info)
+		local disposableData = "xxxmanga.woo.key";
+		local disposablePass = "QEpj2gFKA5y9tUNW";
+		local key = disposableData;
+		local iv = disposablePass;
+		local resultJson = imageDatas[0]:GetAttribute("contentKey");
+		local subPart = string.sub(resultJson,17,#resultJson); 
+		print(subPart);
+		local datas = magicMethod.hexToBytes(subPart);
+		local resultStr = magicMethod.AesDecrypt(datas,key,iv);
+		print(resultStr)
+		local regexStrs = stringHelper.RexMatchAll(resultStr,"url\":","},");
+		print(regexStrs);
 		data.chapter_name = "";
-		for k,v in ipairs (info) do
-			data.page_url:Add(v["url"]);
-		end
+		regexStrs:ForEach(function(v)
+			print(stringHelper.Replace(v,"\"",""));
+			data.page_url:Add(stringHelper.Replace(v,"\"",""));
+		end);
 		globalHelper.OnMangaPagesPhraseComplete(url,tempData,detail,chapterDa)
 	end
 	--[[mangaRequest:Abort();
@@ -343,7 +367,7 @@ end
 function CopyExtensions.UpdateManga(url)
 	print(string.format("https://www.copymanga.com%s",url))
 	local request = CopyExtensions.GetRequest(string.format("https://www.copymanga.com%s",url));
-	request.Callback=callBack;
+	request.Callback = callBack;
 	request:Send();
 	return request;
 end
