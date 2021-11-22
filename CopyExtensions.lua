@@ -316,14 +316,6 @@ function CopyExtensions.RequestMangaPageList(url,detail,chapterDa)
 
 		local document = htmlHelper.ParseHTMLStr(resq.Response.DataAsText);
 		local imageDatas = htmlHelper.DocumentLinqSelectItems(document,"imageData");
-		--[[local selectElement = htmlHelper.DocumentQuerySelectItems(document,"div.disposableData");
-		local disposableData = selectElement[0]:GetAttribute("disposable");
-		selectElement = htmlHelper.DocumentQuerySelectItems(document,"div.disposablePass");
-		local disposablePass = selectElement[0]:GetAttribute("disposable");
-		local prePart = string.sub(disposableData,1,16); 
-		local postPart = string.sub(disposableData,17,#disposableData);
-		local datas = magicMethod.hexToBytes(postPart);--]]
-
 		local disposableData = "xxxmanga.woo.key";
 		local disposablePass = "QEpj2gFKA5y9tUNW";
 		local key = disposableData;
@@ -334,7 +326,7 @@ function CopyExtensions.RequestMangaPageList(url,detail,chapterDa)
 		local datas = magicMethod.hexToBytes(subPart);
 		local resultStr = magicMethod.AesDecrypt(datas,key,iv);
 		print(resultStr)
-		local regexStrs = stringHelper.RexMatchAll(resultStr,"url\":","},");
+		local regexStrs = stringHelper.RexMatchAll(resultStr,"url\":","}");
 		print(regexStrs);
 		data.chapter_name = "";
 		regexStrs:ForEach(function(v)
@@ -343,20 +335,9 @@ function CopyExtensions.RequestMangaPageList(url,detail,chapterDa)
 		end);
 		globalHelper.OnMangaPagesPhraseComplete(url,tempData,detail,chapterDa)
 	end
-	--[[mangaRequest:Abort();
-	mangaRequest = WebRequest.Get(url);
-	local request = mangaRequest:SendWebRequest();
-	request.completed=request.completed+callBack;--]]
-	print(url)
 	local request = CopyExtensions.GetRequest(string.format("https://www.copymanga.com%s",url));
 	request.Callback=callBack;
 	request:Send();
-
-	--[[mangaRequest:Dispose();
-	mangaRequest:Clear();
-	mangaRequest.Uri = mUri(url);
-	mangaRequest.Callback=callBack;
-	mangaRequest:Send();--]]
 end
 
 function CopyExtensions.StrightGetMangaDetail(mangaId)
@@ -433,6 +414,7 @@ function CopyExtensions.Update(resq,url)
 						local timestamp = os.time({day=times[3],month=times[2],year=times[1], hour =0, min = 0, sec =0});
 						tempData.updatetime = timestamp;
 						tempData.url = string.format("/comic/%s/chapter/%s", s["comic_path_word"], s["uuid"])
+						tempData.source = "6696312508930833206";
 						tempChapter.data:Add(tempData);
 					end
 				end
