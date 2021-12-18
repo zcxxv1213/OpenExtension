@@ -325,12 +325,13 @@ function CopyExtensions.RequestMangaPageList(url,detail,chapterDa)
 		local datas = magicMethod.hexToBytes(subPart);
 		local resultStr = magicMethod.AesDecrypt(datas,key,iv);
 		print(resultStr)
-		--local regexStrs = stringHelper.RexMatchAll(resultStr,"url\":","}");
-		local regexStrs = stringHelper.RexMatchAll(resultStr,"https","}");
+		local regexStrs = stringHelper.RexMatchAll(resultStr,"url\":","}");
+		--local regexStrs = stringHelper.RexMatchAll(resultStr,"https","}");
 		print(regexStrs);
 		data.chapter_name = "";
 		regexStrs:ForEach(function(v)
 			local temp = stringHelper.Replace(v,"\"","");
+			temp = stringHelper.Replace(temp,"url:","");
 			temp = stringHelper.Replace(temp,"}","");
 			--temp = stringHelper.Replace(v,'"',"");
 			print(temp);
