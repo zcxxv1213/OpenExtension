@@ -308,7 +308,6 @@ function CopyExtensions.RequestMangaPageList(url,detail,chapterDa)
 		then
 			return;
 		end
-		print("1")
 		local tempData = pageAllData.New();
 		tempData.source = "6696312508930833206";
 		local data = PageData.New();
@@ -326,15 +325,21 @@ function CopyExtensions.RequestMangaPageList(url,detail,chapterDa)
 		local datas = magicMethod.hexToBytes(subPart);
 		local resultStr = magicMethod.AesDecrypt(datas,key,iv);
 		print(resultStr)
-		local regexStrs = stringHelper.RexMatchAll(resultStr,"url\":","}");
+		--local regexStrs = stringHelper.RexMatchAll(resultStr,"url\":","}");
+		local regexStrs = stringHelper.RexMatchAll(resultStr,"https","}");
 		print(regexStrs);
 		data.chapter_name = "";
 		regexStrs:ForEach(function(v)
-			print(stringHelper.Replace(v,"\"",""));
-			data.page_url:Add(stringHelper.Replace(v,"\"",""));
+			local temp = stringHelper.Replace(v,"\"","");
+			temp = stringHelper.Replace(temp,"}","");
+			--temp = stringHelper.Replace(v,'"',"");
+			print(temp);
+
+			data.page_url:Add(temp);
 		end);
 		globalHelper.OnMangaPagesPhraseComplete(url,tempData,detail,chapterDa)
 	end
+	print(string.format("https://www.copymanga.com%s",url))
 	local request = CopyExtensions.GetRequest(string.format("https://www.copymanga.com%s",url));
 	request.Callback=callBack;
 	request:Send();
