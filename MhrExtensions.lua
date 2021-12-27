@@ -175,6 +175,7 @@ function MhrExtensions.OnMangaDetailCallBack(resq,resp)
 			--tempData.filesize = s["filesize"];
 			tempData.chapter_order = v["sectionSort"];
 			tempData.url = string.format("/v1/manga/getRead?mangaSectionId=%s", v["sectionId"]) 
+			tempData.source = "3616827811449702173";
 			tempChapter.data:Add(tempData);
 		end
 		for k,v in pairs(info["response"]["mangaRolls"]) do
@@ -199,6 +200,7 @@ function MhrExtensions.OnMangaDetailCallBack(resq,resp)
 			--tempData.filesize = s["filesize"];
 			tempData.chapter_order = v["sectionSort"];
 			tempData.url = string.format("/v1/manga/getRead?mangaSectionId=%s", v["sectionId"]) 
+			tempData.source = "3616827811449702173";
 			tempChapter.data:Add(tempData);
 		end
 		for k,v in pairs(info["response"]["mangaEpisode"]) do
@@ -223,6 +225,7 @@ function MhrExtensions.OnMangaDetailCallBack(resq,resp)
 			--tempData.filesize = s["filesize"];
 			tempData.chapter_order = v["sectionSort"];
 			tempData.url = string.format("/v1/manga/getRead?mangaSectionId=%s", v["sectionId"]) 
+			tempData.source = "3616827811449702173";
 			tempChapter.data:Add(tempData);
 		end
 		globalHelper.OnMangaDetailPhraseComplete(detailData)
@@ -416,7 +419,7 @@ function MhrExtensions.GenerateGSNHash(extraTable)
 		end
 	end  
 	s = s..c;
-	return MathUtils.ToHexMd5Hash(s);
+	return Base.MathUtils.ToHexMd5Hash(s);
 end
 
 function MhrExtensions.GetTextureRequest(url)

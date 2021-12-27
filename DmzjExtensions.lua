@@ -405,3 +405,4 @@ function DmzjExtensions.GetGenreTable()
 end
 
 return DmzjExtensions;
+
