@@ -49,7 +49,7 @@ function CopyExtensions.Init()
 		"Chrome/56.0.2924.87 " ..
 		"Safari/537.36 ");
 
-		mangaRequest:SetHeader("Referer", "https://www.copymanga.com");
+		mangaRequest:SetHeader("Referer", "https://www.copymanga.org");
 	end
 
 	if playerPrefs.HasKey("CopyPort") then
@@ -89,8 +89,8 @@ function CopyExtensions.RequestMangaDetail(url)
 		--print(selectElement)
 		--local disposableData = selectElement[0]:GetAttribute("disposable");
 		--print(disposableData)
-		print(string.format("https://www.copymanga.com%s/chapters",url))
-		local request = CopyExtensions.GetRequest(string.format("https://www.copymanga.com%s/chapters",url));
+		print(string.format("https://www.copymanga.org%s/chapters",url))
+		local request = CopyExtensions.GetRequest(string.format("https://www.copymanga.org%s/chapters",url));
 		local onDetailCallBack = function( resq,resp)
 			if resq.State == httpStates.Aborted or resq.State == httpStates.Error or  resq.State == httpStates.ConnectionTimedOut 
 			or  resq.State == httpStates.TimedOut 
@@ -149,8 +149,8 @@ function CopyExtensions.RequestMangaDetail(url)
 		
 	end
 
-	print(url)
-	local request = CopyExtensions.GetRequest(string.format("https://www.copymanga.com%s",url));
+	print(string.format("https://www.copymanga.org%s",url))
+	local request = CopyExtensions.GetRequest(string.format("https://www.copymanga.org%s",url));
 	request.Callback=callBack;
 	request:Send();
 end
@@ -231,10 +231,10 @@ function CopyExtensions.RequestSearchManga(query)
 			
 		end
 	end
-	print(string.format("https://www.copymanga.com/api/kb/web/searchs/comics?limit=%s&offset=%s&platform=2&q=%s&q_type=",30,0,query));
-	local htmlRequest = (string.format("https://www.copymanga.com/api/kb/web/searchs/comics?limit=%s&offset=%s&platform=2&q=%s&q_type=",30,0,query));
+	print(string.format("https://www.copymanga.org/api/kb/web/searchs/comics?limit=%s&offset=%s&platform=2&q=%s&q_type=",30,0,query));
+	local htmlRequest = (string.format("https://www.copymanga.org/api/kb/web/searchs/comics?limit=%s&offset=%s&platform=2&q=%s&q_type=",30,0,query));
 	print()
-	local request = CopyExtensions.GetRequest(string.format("https://www.copymanga.com/api/kb/web/searchs/comics?limit=%s&offset=%s&platform=2&q=%s&q_type=",30,0,query));
+	local request = CopyExtensions.GetRequest(string.format("https://www.copymanga.org/api/kb/web/searchs/comics?limit=%s&offset=%s&platform=2&q=%s&q_type=",30,0,query));
 	request.Callback=callBack;
 	request:Send();
 end
@@ -246,7 +246,7 @@ function CopyExtensions.GetRequest(url)
 		"Chrome/56.0.2924.87 " ..
 		"Safari/537.36 ");
 
-	mangaTextureRequest:SetHeader("Referer", "https://www.copymanga.com");
+	mangaTextureRequest:SetHeader("Referer", "https://www.copymanga.org");
 	mangaTextureRequest.Tag = url;
 
 	if proxyPort ~= 0 then
@@ -269,16 +269,47 @@ function CopyExtensions.RequestGenreManga(url,page)
 		end
 		print(resq.Response.DataAsText)
 		local document = htmlHelper.ParseHTMLStr(resq.Response.DataAsText);
-		local mangaList = htmlHelper.DocumentLinqSelectItems(document,"exemptComicItem");
+		local mangaList = htmlHelper.DocumentLinqSelectItems(document,"exemptComic-box")[0]:GetAttribute("list");
 		local list={};
-		mangaList:ForEach(function(v)
+		local replaceReulst = stringHelper.Replace(mangaList,"'","\"");
+		local temp = "";
+		for i = 1,#replaceReulst do
+			local ch = string.sub(replaceReulst,i,i);
+			
+			if ch == '"' then
+				
+				local sub_1 = string.sub(replaceReulst,i-2,i-2);
+				local sub_2 = string.sub(replaceReulst,i-1,i-1);
+				local sub_3 = string.sub(replaceReulst,i+1,i+1);
+				if sub_2 == "{" or sub_2 == " "then
+					temp = temp..ch;
+				elseif sub_3 == ":" or sub_3 == "," or sub_3 ==" " or sub_3 == "}"then
+					temp = temp..ch;
+				else
+
+				end
+			else
+				temp = temp..ch;
+			end
+		end
+		local jsonresult = json.decode(temp)
+		local tempKey={}
+		for k,v in pairs(jsonresult) do
+			table.insert(tempKey,k);
+		end
+		for k,v in pairs(tempKey) do
+			local tempData = mangaData.New();
+			tempData.url = "/comic/"..jsonresult[k]["path_word"];
+			tempData.title = jsonresult[k]["name"];
+			tempData.cover = jsonresult[k]["cover"];
+			tempData.source = "6696312508930833206";
+			table.insert(list,tempData);
+		end
+		--[[mangaList:ForEach(function(v)
+			print(v);
 			local tempData = mangaData.New();
 			local selectElement = htmlHelper.ElementQuerySelect(v,"div.exemptComicItem-txt > a");
-			--[[selectElement:ForEach(function(s)
-				if s:GetAttribute("href")~=nil then
-					tempData.url = s:GetAttribute("href");
-				end
-			end);--]]
+			
 			print(selectElement[0]:GetAttribute("href"))
 			tempData.url = selectElement[0]:GetAttribute("href");
 			selectElement = htmlHelper.ElementQuerySelect(v,"div.exemptComicItem-txt > a > p");
@@ -288,15 +319,14 @@ function CopyExtensions.RequestGenreManga(url,page)
 			tempData.cover = selectElement[0]:GetAttribute("data-src");
 			print(tempData.cover)
 			tempData.source = "6696312508930833206";
-			--[[selectElement:ForEach(function(ss)
-				print(ss.TextContent);
-			end);--]]
+
 			table.insert(list,tempData);
-		end);
+		end);--]]
 		globalHelper.OnGenreRequestComplete(list)
 	end
 	print(string.format(url,(page - 1)*pageCount,pageCount))
-	local request = CopyExtensions.GetRequest(string.format(url,(page - 1)*pageCount,pageCount));
+	--local request = CopyExtensions.GetRequest(string.format(url,(page - 1)*pageCount,pageCount));
+	local request = CopyExtensions.GetRequest(string.format(url,0,40));
 	request.Callback=callBack;
 	request:Send();
 end
@@ -340,20 +370,20 @@ function CopyExtensions.RequestMangaPageList(url,detail,chapterDa)
 		end);
 		globalHelper.OnMangaPagesPhraseComplete(url,tempData,detail,chapterDa)
 	end
-	print(string.format("https://www.copymanga.com%s",url))
-	local request = CopyExtensions.GetRequest(string.format("https://www.copymanga.com%s",url));
+	print(string.format("https://www.copymanga.org%s",url))
+	local request = CopyExtensions.GetRequest(string.format("https://www.copymanga.org%s",url));
 	request.Callback=callBack;
 	request:Send();
 end
 
 function CopyExtensions.StrightGetMangaDetail(mangaId)
 	print(mangaId)
-	CopyExtensions.RequestMangaDetail(string.format("https://www.copymanga.com/comic/%s", mangaId));
+	CopyExtensions.RequestMangaDetail(string.format("https://www.copymanga.org/comic/%s", mangaId));
 end
 
 function CopyExtensions.UpdateManga(url)
-	print(string.format("https://www.copymanga.com%s",url))
-	local request = CopyExtensions.GetRequest(string.format("https://www.copymanga.com%s",url));
+	print(string.format("https://www.copymanga.org%s",url))
+	local request = CopyExtensions.GetRequest(string.format("https://www.copymanga.org%s",url));
 	request.Callback = callBack;
 	request:Send();
 	return request;
@@ -431,8 +461,8 @@ end
 
 function CopyExtensions.GetGenreTable()
 	return {
-		热门 = "https://www.copymanga.com/comics?ordering=-popular&offset=%s&limit=%s",
-		最新 = "https://www.copymanga.com/comics?ordering=-datetime_updated&offset=%s&limit=%s",
+		热门 = "https://www.copymanga.org/comics?ordering=-popular&offset=%s&limit=%s",
+		最新 = "https://www.copymanga.org/comics?ordering=-datetime_updated&offset=%s&limit=%s",
 	};
 end
 function Split(str, delimiter)
