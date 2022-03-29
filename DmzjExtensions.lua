@@ -256,7 +256,7 @@ function DmzjExtensions.RequestGenreManga(url,page)
 			local tempData = mangaData.New();
 			tempData.id = v["id"].. "";
 			tempData.title = v["name"]
-			tempData.authors = v["authors"]
+			tempData.authors = v["authors"] == nil or ""
 			tempData.status = v["status"]
 			tempData.cover = string.format("https://images.dmzj.com/%s",v["cover"])
 			tempData.types = v["types"]
