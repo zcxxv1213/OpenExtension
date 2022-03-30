@@ -117,13 +117,18 @@ function CopyExtensions.RequestMangaDetail(url)
 			local chapterJsonString = magicMethod.AesDecrypt(datas,key,iv);
 			--local chapterJsonString = magicMethod.AesDecrypt(resq.Response.DataAsText,key,iv)
 			print(chapterJsonString)
-			local regexStr = stringHelper.RexMatch(chapterJsonString,"chapters\":","],");
-			regexStr = regexStr .. "]";
+			local regexStr = stringHelper.RexMatch(chapterJsonString,"chapters\":","], ");
+			local tempNum = stringHelper.IndexOf(regexStr,", \"last_chapter");
+			print(tempNum)
+			if tempNum ~= -1 then
+				regexStr = string.sub(regexStr,0,tempNum);
+			else
+				regexStr = regexStr .. "]";
+			end
 			print(regexStr);
 			local info = json.decode(regexStr)
 			local tempKey={}
 			for k,v in pairs(info) do
-				print(k,v)
 				table.insert(tempKey,k);
 			end
 			--local rTable = ReverseTable(tempKey);
@@ -137,8 +142,8 @@ function CopyExtensions.RequestMangaDetail(url)
 				--local timestamp = os.time({day=times[3],month=times[2],year=times[1], hour =0, min = 0, sec =0});
 				--tempData.updatetime = timestamp;
 				tempData.url = string.format(url.."/chapter/%s", v["id"])
+				tempData.source = "6696312508930833206";
 				tempChapter.data:Add(tempData);
-				print(tempData.url ,tempData.chapter_id,tempData.updatetime);
 			end
 			tempChapter.data:Reverse();
 			--detailData.chapters:Reverse();
@@ -325,7 +330,8 @@ function CopyExtensions.RequestGenreManga(url,page)
 		globalHelper.OnGenreRequestComplete(list)
 	end
 	print(string.format(url,(page - 1)*pageCount,pageCount))
-	local request = CopyExtensions.GetRequest(string.format(url,(page - 1)*pageCount,pageCount));
+	--local request = CopyExtensions.GetRequest(string.format(url,(page - 1)*pageCount,pageCount));
+	local request = CopyExtensions.GetRequest(string.format(url,0,40));
 	request.Callback=callBack;
 	request:Send();
 end
