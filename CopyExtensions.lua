@@ -331,7 +331,7 @@ function CopyExtensions.RequestGenreManga(url,page)
 	end
 	print(string.format(url,(page - 1)*pageCount,pageCount))
 	--local request = CopyExtensions.GetRequest(string.format(url,(page - 1)*pageCount,pageCount));
-	local request = CopyExtensions.GetRequest(string.format(url,0,40));
+	local request = CopyExtensions.GetRequest(string.format(url,(page - 1)*pageCount,pageCount));
 	request.Callback=callBack;
 	request:Send();
 end

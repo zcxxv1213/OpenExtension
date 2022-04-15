@@ -196,7 +196,7 @@ function DmzjExtensions.RequestSearchManga(query)
 		end
 		globalHelper.OnSearch("2884190037559093788",list)
 	end
-	local request = DmzjExtensions.GetRequest(string.format("http://s.acg.dmzj1.com/comicsum/search.php?s=%s",query));
+	local request = DmzjExtensions.GetRequest(string.format("http://s.acg.dmzj.com/comicsum/search.php?s=%s",query));
 	request.Callback=callBack;
 	request:Send();
 end
