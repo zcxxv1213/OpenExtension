@@ -478,6 +478,8 @@ function MhrExtensions.RequestGenreManga(url,page)
 
 	if string.find(url,"_lastest") then
 		table.insert(tempTable,{["sort"]="1"});
+	elseif string.find(url,"_complete") then
+		table.insert(tempTable,{["sort"]="3"});
 	else
 		table.insert(tempTable,{["sort"]="0"});
 	end
@@ -681,10 +683,18 @@ function MhrExtensions.Update(resq,url)
 end
 
 function MhrExtensions.GetGenreTable()
-	return {
+	local tempTable = {
 		全部 = "subCategoryType_0_subCategoryId_0",
+		完結 = "subCategoryType_0_subCategoryId_0_complete",
+		young = "subCategoryType_1_subCategoryId_1",
+		teen = "subCategoryType_1_subCategoryId_3",
+		悬疑 = "subCategoryType_0_subCategoryId_17",
+		热血 = "subCategoryType_0_subCategoryId_31",
+		后宫 = "subCategoryType_0_subCategoryId_8",
+		adventure = "subCategoryType_0_subCategoryId_2",
 		最新 = "subCategoryType_0_subCategoryId_0_lastest",
 	};
+	return tempTable;
 end
 
 
