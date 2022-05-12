@@ -262,7 +262,7 @@ function PicaExtensions.RequestSearchManga(query)
 end
 
 function PicaExtensions.GetLoginPostRequest(nurl)
-	local timeStr =  math.floor( (tostring(timeHelper.ClientNow()) + 0)/1000);
+	local timeStr =  math.floor( os.time());
 	local nonce = systemGuid.NewGuid():ToString();
 	nonce = stringHelper.Replace(nonce,"-","");
 	local mangaTextureRequest = mHTTPRequest(nil,httpMethod.Post);
@@ -278,7 +278,7 @@ function PicaExtensions.GetLoginPostRequest(nurl)
 end
 
 function PicaExtensions.GetPostRequest(nurl)
-	local timeStr =  math.floor( (tostring(timeHelper.ClientNow()) + 0)/1000);
+	local timeStr =  math.floor( os.time());
 	local nonce = systemGuid.NewGuid():ToString();
 	nonce = stringHelper.Replace(nonce,"-","");
 	local mangaTextureRequest = mHTTPRequest(nil,httpMethod.Post);
@@ -299,7 +299,7 @@ function PicaExtensions.GetRequest(nurl)
 		uiHelper.ShowTipsUI("登录失败");
 		return nil;
 	end
-	local timeStr =  math.floor((tostring(timeHelper.ClientNow()) + 0)/1000) ;
+	local timeStr =  math.floor(os.time()) ;
 	print(timeStr)
 	local nonce = systemGuid.NewGuid():ToString();
 	nonce = stringHelper.Replace(nonce,"-","");
@@ -320,7 +320,9 @@ function PicaExtensions.GetPicRequest(nurl)
 		uiHelper.ShowTipsUI("登录失败");
 		return nil;
 	end
-	local timeStr =  math.floor((tostring(timeHelper.ClientNow()) + 0)/1000) ;
+	local timeStr =  math.floor(os.time()) ;
+	--print("C#"..timeStr)
+	--print("LUA"..os.time())
 	local nonce = systemGuid.NewGuid():ToString();
 	nonce = stringHelper.Replace(nonce,"-","");
 	local mangaTextureRequest = mHTTPRequest(nil,httpMethod.Get);
