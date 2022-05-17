@@ -15,6 +15,7 @@ local pageAllData = PageAllData;
 local mangaDetail = MangaDetail;
 local chapterList = ChapterList;
 local chapterData = ChapterData;
+
 --local mList = System.Collections.Generic.List<MangaData>;
 
 local DmzjExtensions = {};
