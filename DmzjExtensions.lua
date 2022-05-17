@@ -1,4 +1,4 @@
-local json = require 'cjson'
+﻿local json = require 'cjson'
 --local bjson = BestHTTP.JSON.Json
 local jsonSplit = JsonSplit;
 local GameObject = UnityEngine.GameObject
@@ -53,7 +53,7 @@ function DmzjExtensions.Init()
 		"Safari/537.36 "..
 		"Tachiyomi/1.0");
 
-		mangaRequest:SetHeader("referer", "http://www.dmzj.com/");
+		mangaRequest:SetHeader("referer", "http://www.dmzj1.com/");
 	end
 end
 
@@ -82,7 +82,7 @@ function DmzjExtensions.RequestPopularManga(page)
 			tempData.types = v["types"]
 			tempData.last_updatetime = v["last_updatetime"]
 			tempData.num = v["num"]
-			tempData.url = string.format("http://v3api.dmzj.com/comic/comic_%d.json?version=2.7.019", v.id)
+			tempData.url = string.format("http://v3api.dmzj1.com/comic/comic_%d.json?version=2.7.019", v.id)
 			tempData.source = "2884190037559093788";
 			table.insert(list,tempData);
 		end
@@ -98,7 +98,7 @@ function DmzjExtensions.RequestPopularManga(page)
 	mangaRequest.Callback=callBack;
 	mangaRequest:Send();--]]
 
-	local request = DmzjExtensions.GetRequest(string.format("https://v3api.dmzj.com/classify/0/0/%d.json",page - 1));
+	local request = DmzjExtensions.GetRequest(string.format("https://v3api.dmzj1.com/classify/0/0/%d.json",page - 1));
 	request.Callback=callBack;
 	request:Send();
 
@@ -142,7 +142,7 @@ function DmzjExtensions.RequestMangaDetail(url)
 			tempData.filesize = v["filesize"];
 			tempData.source = "2884190037559093788";
 			tempData.chapter_order = v["chapter_order"];
-			tempData.url = string.format("https://api.m.dmzj.com/comic/chapter/%d/%d.html", detailData.id,tempData.chapter_id) 
+			tempData.url = string.format("https://api.m.dmzj1.com/comic/chapter/%d/%d.html", detailData.id,tempData.chapter_id) 
 			tempChapter.data:Add(tempData);
 		end
 		globalHelper.OnMangaDetailPhraseComplete(detailData)
@@ -217,7 +217,7 @@ function DmzjExtensions.GetRequest(url)
 		"Mobile Safari/537.36"..
 		"Tachiyomi/1.0");
 
-	mangaTextureRequest:SetHeader("referer", "https://www.dmzj.com/");
+	mangaTextureRequest:SetHeader("referer", "https://www.dmzj1.com/");
 	mangaTextureRequest.Tag = url;
 	return mangaTextureRequest;
 end
@@ -388,7 +388,7 @@ function DmzjExtensions.Update(resq,url)
 			tempData.filesize = v["filesize"];
 			tempData.source = "2884190037559093788";
 			tempData.chapter_order = v["chapter_order"];
-			tempData.url = string.format("https://api.m.dmzj.com/comic/chapter/%d/%d.html", detailData.id,tempData.chapter_id) 
+			tempData.url = string.format("https://api.m.dmzj1.com/comic/chapter/%d/%d.html", detailData.id,tempData.chapter_id) 
 			tempChapter.data:Add(tempData);
 		end
 	return detailData;
