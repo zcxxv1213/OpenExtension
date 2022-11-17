@@ -46,7 +46,7 @@ function DmzjExtensions.Init()
 	local ifMobile = magicMethod.IfMobile();
 	local protoc;
 	if ifMobile then
-		protoc = require "protoc"
+		protoc = require "lua-protobuf//protoc"
 	else
 		protoc = require "lua-protobuf/protoc"
 	end
