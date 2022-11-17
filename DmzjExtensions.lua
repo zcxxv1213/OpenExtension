@@ -1,6 +1,6 @@
 ﻿local json = require 'cjson'
-
-
+local pb = require "pb"
+local protoc = require "protoc"
 local jsonSplit = JsonSplit;
 local GameObject = UnityEngine.GameObject
 --local WebRequest = UnityEngine.Networking.UnityWebRequest;
@@ -44,13 +44,6 @@ function DmzjExtensions.Init()
 	print(path)
 	pb.loadfile(path)--]]
 	local ifMobile = magicMethod.IfMobile();
-	local protoc;
-	print(ifMobile)
-	if ifMobile then
-		protoc = require "protoc"
-	else
-		protoc = require "protoc"
-	end
 	print(protoc)
 	local P = protoc.new()
 
@@ -294,7 +287,6 @@ function DmzjExtensions.RequestMangaDetail(url)
 			}
 		}
 
-		local pb = require "pb"
 		local bytes = assert(pb.encode("ComicDetailResponse", data))
 		print(bytes)
 		local data3 = pb.decode("ComicDetailResponse", bytes);
