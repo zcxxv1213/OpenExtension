@@ -1,5 +1,6 @@
 ﻿local json = require 'cjson'
---local bjson = BestHTTP.JSON.Json
+--local pb = require "pb"
+local protoc = require "lua-protobuf/protoc"
 local jsonSplit = JsonSplit;
 local GameObject = UnityEngine.GameObject
 --local WebRequest = UnityEngine.Networking.UnityWebRequest;
@@ -15,7 +16,8 @@ local pageAllData = PageAllData;
 local mangaDetail = MangaDetail;
 local chapterList = ChapterList;
 local chapterData = ChapterData;
-
+local magicMethod = MagicMethod;
+local privateKey = "MIICeAIBADANBgkqhkiG9w0BAQEFAASCAmIwggJeAgEAAoGBAK8nNR1lTnIfIes6oRWJNj3mB6OssDGx0uGMpgpbVCpf6+VwnuI2stmhZNoQcM417Iz7WqlPzbUmu9R4dEKmLGEEqOhOdVaeh9Xk2IPPjqIu5TbkLZRxkY3dJM1htbz57d/roesJLkZXqssfG5EJauNc+RcABTfLb4IiFjSMlTsnAgMBAAECgYEAiz/pi2hKOJKlvcTL4jpHJGjn8+lL3wZX+LeAHkXDoTjHa47g0knYYQteCbv+YwMeAGupBWiLy5RyyhXFoGNKbbnvftMYK56hH+iqxjtDLnjSDKWnhcB7089sNKaEM9Ilil6uxWMrMMBH9v2PLdYsqMBHqPutKu/SigeGPeiB7VECQQDizVlNv67go99QAIv2n/ga4e0wLizVuaNBXE88AdOnaZ0LOTeniVEqvPtgUk63zbjl0P/pzQzyjitwe6HoCAIpAkEAxbOtnCm1uKEp5HsNaXEJTwE7WQf7PrLD4+BpGtNKkgja6f6F4ld4QZ2TQ6qvsCizSGJrjOpNdjVGJ7bgYMcczwJBALvJWPLmDi7ToFfGTB0EsNHZVKE66kZ/8Stx+ezueke4S556XplqOflQBjbnj2PigwBN/0afT+QZUOBOjWzoDJkCQClzo+oDQMvGVs9GEajS/32mJ3hiWQZrWvEzgzYRqSf3XVcEe7PaXSd8z3y3lACeeACsShqQoc8wGlaHXIJOHTcCQQCZw5127ZGs8ZDTSrogrH73Kw/HvX55wGAeirKYcv28eauveCG7iyFR0PFB/P/EDZnyb+ifvyEFlucPUI0+Y87F";
 --local mList = System.Collections.Generic.List<MangaData>;
 
 local DmzjExtensions = {};
@@ -37,6 +39,9 @@ function DmzjExtensions.GetExtensionName()
 end
 
 function DmzjExtensions.Init()
+	--[[local path = magicMethod.GetCurrentLoadPath().."/LuaModule/Protol/".."dmzj.pb";
+	print(path)
+	pb.loadfile(path)--]]
 	print("HotFix")
 	print("Init")
 	print("ooo")
@@ -102,10 +107,9 @@ function DmzjExtensions.RequestPopularManga(page)
 	local request = DmzjExtensions.GetRequest(string.format("https://v3api.dmzj1.com/classify/0/0/%d.json",page - 1));
 	request.Callback=callBack;
 	request:Send();
-
 end
 
-function DmzjExtensions.RequestMangaDetail(url)
+function DmzjExtensions.OnV4Fail(url)
 	local callBack = function( resq,resp)
 		print(resq.State)
 		if resq.State == httpStates.Aborted or resq.State == httpStates.Error or  resq.State == httpStates.ConnectionTimedOut 
@@ -114,6 +118,22 @@ function DmzjExtensions.RequestMangaDetail(url)
 			print("Error")
 			return;
 		end
+		print(resq.Response.DataAsText)
+
+		local msg = dmzj_pb.ComicDetailResponse()
+		msg.Errno = 10;
+		msg.Errmsg = "顽皮";
+		local msg = dmzj_pb.ComicDetailResponse()
+		--local str= msg:SerializeToString();
+		--print(magicMethod.hexToBytes(str));
+		--print(str.."")
+		local result = magicMethod.DmzjRSAStr(resq.Response.DataAsText,privateKey);
+		print(result);
+
+		local msg2 = dmzj_pb.ComicDetailResponse()
+		msg2:ParseFromString(result)
+		
+		print(msg2.Errmsg..msg2.Errno)
 		local info = json.decode(resq.Response.DataAsText)
 		print(resq.Response.DataAsText);
 		local detailData = mangaDetail.New();
@@ -148,11 +168,86 @@ function DmzjExtensions.RequestMangaDetail(url)
 		end
 		globalHelper.OnMangaDetailPhraseComplete(detailData)
 	end
-	--url = stringHelper.Replace(url,"?version=2.7.019","")
+	--url = stringHelper.Replace(url,"?version=2.7.019","")	
 	print(url)
 	local cid = string.match(url, "%d+")
-	print(string.format("https://api.dmzj.com/dynamic/comicinfo/%s",cid .. ".json"))
+	--print(string.format("https://api.dmzj.com/dynamic/comicinfo/%s",cid .. ".json"))
 	local request = DmzjExtensions.GetRequest(string.format("https://api.dmzj.com/dynamic/comicinfo/%s",cid .. ".json"));
+	request.Callback=callBack;
+	request:Send();
+end
+
+function DmzjExtensions.RequestMangaDetail(url)
+	local callBack = function( resq,resp)
+		print(resq.State)
+		if resq.State == httpStates.Aborted or resq.State == httpStates.Error or  resq.State == httpStates.ConnectionTimedOut 
+		or  resq.State == httpStates.TimedOut 
+		then
+			DmzjExtensions.OnV4Fail(url);
+			return;
+		end
+		print(resq.Response.DataAsText)
+		
+		--[[local data = {
+			Errno = 1000,
+			Errmsg = "222",
+			Data ={
+				Title = "刺客&灰姑娘"
+			}
+		}
+		local bytes = assert(pb.encode("ComicDetailResponse", data))
+		print(bytes)
+		local data3 = pb.decode("ComicDetailResponse", bytes);--]]
+		
+		--print(data3.Errmsg)
+		local result = magicMethod.DmzjRSAStrJson(resq.Response.DataAsText,privateKey);
+
+		--[[local s = tolua.tolstring(result)
+		print(s)
+		local data3 = pb.decode("MangaDto", s);
+
+		print(data3.description)--]]
+		local data2 = json.decode(result)
+		print(data2["Data"].Id)
+		local detailData = mangaDetail.New();
+
+		detailData.id = data2["Data"].Id;
+		detailData.title = data2["Data"].Title;
+		detailData.url = data2["Data"].Id;
+		detailData.cover = data2["Data"].Cover;
+		detailData.source = "2884190037559093788";
+		detailData.last_updatetime =(data2.Data.LastUpdatetime+0)*1000;
+		detailData.authors = data2["Data"].Authors[1].TagName;
+		detailData.status = data2.Data.Status[1].TagName;
+		detailData.types = data2.Data.TypesTypes[1].TagName;
+		detailData.description = data2.Data.Description;
+		
+		
+		local tempChapter = chapterList();
+		detailData.chapters:Add(tempChapter)
+		for i = 1, #data2.Data.Chapters do
+			for j = 1,#data2.Data.Chapters[i].Data do
+				local tempData = chapterData();
+				local v = data2.Data.Chapters[i].Data[j];
+				print(v["ChapterId"].. "")
+				tempData.chapter_id = v["ChapterId"].. "";
+				tempData.chapter_title = v["ChapterTitle"];
+				tempData.updatetime = v["Updatetime"];
+				tempData.filesize = v["Filesize"];
+				tempData.source = "2884190037559093788";
+				tempData.chapter_order = v["ChapterOrder"];
+				tempData.url = string.format("https://api.m.dmzj1.com/comic/chapter/%d/%d.html", detailData.id,tempData.chapter_id) 
+				tempChapter.data:Add(tempData);
+			end
+		end
+		globalHelper.OnMangaDetailPhraseComplete(detailData)
+	end
+	--url = stringHelper.Replace(url,"?version=2.7.019","")	
+	print(url)
+	local cid = string.match(url, "%d+")
+	--print(string.format("https://api.dmzj.com/dynamic/comicinfo/%s",cid .. ".json"))
+	--local request = DmzjExtensions.GetRequest(string.format("https://api.dmzj.com/dynamic/comicinfo/%s",cid .. ".json"));
+	local request = DmzjExtensions.GetRequest(string.format("https://nnv4api.dmzj.com/comic/detail/%s?uid=2665531",cid .. ""));
 	request.Callback=callBack;
 	request:Send();
 end
