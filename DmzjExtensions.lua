@@ -1,6 +1,6 @@
 ﻿local json = require 'cjson'
 local pb = require "pb"
-local protoc = require "lua-protobuf/protoc"
+
 local jsonSplit = JsonSplit;
 local GameObject = UnityEngine.GameObject
 --local WebRequest = UnityEngine.Networking.UnityWebRequest;
@@ -43,7 +43,14 @@ function DmzjExtensions.Init()
 	--[[local path = magicMethod.GetCurrentLoadPath().."/LuaModule/Protol/".."dmzj.pb";
 	print(path)
 	pb.loadfile(path)--]]
-
+	local ifMobile = magicMethod.IfMobile();
+	local protoc;
+	if ifMobile then
+		protoc = require "lua-protobuf/protoc"
+	else
+		protoc = require "protoc"
+	end
+	
 	local P = protoc.new()
 
 	P:load([[
