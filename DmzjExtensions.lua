@@ -54,7 +54,7 @@ function DmzjExtensions.Init()
 	print(protoc)
 	local P = protoc.new()
 
-	P:load([[
+	local chunk = P:compile([[
 		syntax = "proto3";
 		message ComicDetailInfoResponse
 		{
@@ -143,7 +143,7 @@ function DmzjExtensions.Init()
 			 int32 ChapterOrder = 5;
 		}
    ]], "dmzj.proto")
-
+   pb.load(chunk)
 	print("HotFix")
 	print("Init")
 	print("ooo")
