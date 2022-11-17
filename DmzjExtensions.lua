@@ -1,5 +1,5 @@
 ﻿local json = require 'cjson'
-local pb = require "pb"
+
 
 local jsonSplit = JsonSplit;
 local GameObject = UnityEngine.GameObject
@@ -296,6 +296,8 @@ function DmzjExtensions.RequestMangaDetail(url)
 				Title = "刺客&灰姑娘"
 			}
 		}
+
+		local pb = require "pb"
 		local bytes = assert(pb.encode("ComicDetailResponse", data))
 		print(bytes)
 		local data3 = pb.decode("ComicDetailResponse", bytes);
