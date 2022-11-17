@@ -48,7 +48,7 @@ function DmzjExtensions.Init()
 	if ifMobile then
 		protoc = require "protoc"
 	else
-		protoc = require "protoc"
+		protoc = require "lua-protobuf/protoc"
 	end
 	
 	local P = protoc.new()
