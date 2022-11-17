@@ -143,7 +143,9 @@ function DmzjExtensions.Init()
 			 int32 ChapterOrder = 5;
 		}
    ]], "dmzj.proto")
-   pb.load(chunk)
+   local ret, offset = pb.load(chunk)
+
+   print(ret,offset)
 	print("HotFix")
 	print("Init")
 	print("ooo")
@@ -286,7 +288,7 @@ function DmzjExtensions.RequestMangaDetail(url)
 		end
 		print(resq.Response.DataAsText)
 		
-		local data = {
+		--[[local data = {
 			Errno = 1000,
 			Errmsg = "222",
 			Data ={
@@ -296,7 +298,7 @@ function DmzjExtensions.RequestMangaDetail(url)
 
 		local bytes = assert(pb.encode("ComicDetailResponse", data))
 		print(bytes)
-		local data3 = pb.decode("ComicDetailResponse", bytes);
+		local data3 = pb.decode("ComicDetailResponse", bytes);--]]
 		
 		--print(data3.Errmsg)
 		local result = magicMethod.DmzjRSAStr(resq.Response.DataAsText,privateKey);
