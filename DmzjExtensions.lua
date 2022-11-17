@@ -45,12 +45,13 @@ function DmzjExtensions.Init()
 	pb.loadfile(path)--]]
 	local ifMobile = magicMethod.IfMobile();
 	local protoc;
+	print(ifMobile)
 	if ifMobile then
-		protoc = require "lua-protobuf/protoc"
+		protoc = require "protoc"
 	else
-		protoc = require "lua-protobuf/protoc"
+		protoc = require "protoc"
 	end
-	
+	print(protoc)
 	local P = protoc.new()
 
 	P:load([[
@@ -149,11 +150,7 @@ function DmzjExtensions.Init()
 	if not mangaRequest then
 		mangaRequest = mHTTPRequest(nil);
 		print(mangaRequest);
-		print("Mozilla/5.0 (X11; Linux x86_64) " ..
-		"AppleWebKit/537.36 (KHTML, like Gecko) " ..
-		"Chrome/56.0.2924.87 " ..
-		"Safari/537.36 "..
-		"Tachiyomi/1.0");
+
 		mangaRequest:SetHeader("User-Agent","Mozilla/5.0 (X11; Linux x86_64) " ..
 		"AppleWebKit/537.36 (KHTML, like Gecko) " ..
 		"Chrome/56.0.2924.87 " ..
@@ -411,7 +408,7 @@ function DmzjExtensions.GetRequest(url)
 		"AppleWebKit/537.36 (KHTML, like Gecko) " ..
 		"Chrome/88.0.4324.93 " ..
 		"Mobile Safari/537.36"..
-		"Tachiyomi/1.0");
+		"yumanga/1.0");
 
 	mangaTextureRequest:SetHeader("referer", "https://www.dmzj1.com/");
 	mangaTextureRequest.Tag = url;
