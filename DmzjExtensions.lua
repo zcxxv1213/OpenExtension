@@ -1,6 +1,6 @@
 ﻿local json = require 'cjson'
 --local pb = require "pb"
-local protoc = require "lua-protobuf/protoc"
+--local protoc = require "lua-protobuf/protoc"
 local jsonSplit = JsonSplit;
 local GameObject = UnityEngine.GameObject
 --local WebRequest = UnityEngine.Networking.UnityWebRequest;
@@ -501,4 +501,5 @@ function DmzjExtensions.GetGenreTable()
 end
 
 return DmzjExtensions;
+
 
