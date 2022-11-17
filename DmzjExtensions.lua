@@ -1,6 +1,6 @@
 ﻿local json = require 'cjson'
---local pb = require "pb"
---local protoc = require "lua-protobuf/protoc"
+local pb = require "pb"
+local protoc = require "lua-protobuf/protoc"
 local jsonSplit = JsonSplit;
 local GameObject = UnityEngine.GameObject
 --local WebRequest = UnityEngine.Networking.UnityWebRequest;
@@ -11,6 +11,7 @@ local mUri = System.Uri;
 local globalHelper = GlobalHelper;
 local stringHelper = StringHelper;
 local mangaRequest;
+local loadPb;
 local mangaData = MangaData;
 local pageAllData = PageAllData;
 local mangaDetail = MangaDetail;
@@ -42,6 +43,99 @@ function DmzjExtensions.Init()
 	--[[local path = magicMethod.GetCurrentLoadPath().."/LuaModule/Protol/".."dmzj.pb";
 	print(path)
 	pb.loadfile(path)--]]
+
+	local P = protoc.new()
+
+	P:load([[
+		syntax = "proto3";
+		message ComicDetailInfoResponse
+		{
+		   int32 Id = 1;
+		   string Title = 2;
+		   int32 Direction = 3;
+		   int32 Islong = 4;
+		   int32 IsDmzj = 5;
+		   string Cover = 6;
+		   string Description = 7;
+		   int64 LastUpdatetime = 8;
+		   string LastUpdateChapterName = 9;
+		   int32 Copyright =10;
+		   int32 FirstLetter = 11;
+		   string ComicPy = 12;
+		   int32 Hidden = 13;
+		   int32 HotNum = 14;
+		   int32 HitNum = 15;
+		   int32 Uid = 16;
+		   int32 IsLock = 17;
+		   int32 LastUpdateChapterId = 18;
+		  repeated ComicDetailTypeItemResponse TypesTypes = 19;
+		  repeated ComicDetailTypeItemResponse Status = 20;
+		  repeated ComicDetailTypeItemResponse Authors = 21;
+		   int32 SubscribeNum = 22;
+		  repeated ComicDetailChapterResponse Chapters = 23;
+		   int32 IsNeedLogin = 24;
+		   int32 IsHideChapter = 26;
+		}
+		message ComicDetailResponse
+		{
+		 int32 Errno = 1;
+		 string Errmsg = 2;
+		 MangaDto Data = 3;  
+		}
+		
+		message MangaDto
+		{
+		   int32 id = 1;
+		   string title = 2;
+		   string cover = 6;
+		   string description = 7;
+		   repeated TagDto genres = 19;
+		   repeated TagDto status = 20;
+		   repeated TagDto authors = 21;
+		   repeated ChapterGroupDto chapterGroups = 23;
+		}
+		
+		message TagDto
+		{
+		   string name = 2;
+		}
+		
+		message ChapterGroupDto
+		{
+		   string name = 1;
+		   repeated ChapterDto chapters = 2;
+		}
+		
+		message ChapterDto
+		{
+		   int32 id = 1;
+		   string name = 2;
+		   int64 updateTime = 3;
+		}
+		
+		
+		message ComicDetailTypeItemResponse
+		{
+		   int32 TagId = 1;
+		   string TagName = 2;
+		}
+		
+		message ComicDetailChapterResponse
+		{
+			string Title = 1;
+		   repeated ComicDetailChapterInfoResponse Data = 2;  
+		}
+		
+		message ComicDetailChapterInfoResponse
+		{
+			 int32 ChapterId = 1;
+			 string ChapterTitle = 2;
+			 int64 Updatetime = 3;
+			 int32 Filesize = 4;
+			 int32 ChapterOrder = 5;
+		}
+   ]], "dmzj.proto")
+
 	print("HotFix")
 	print("Init")
 	print("ooo")
@@ -188,7 +282,7 @@ function DmzjExtensions.RequestMangaDetail(url)
 		end
 		print(resq.Response.DataAsText)
 		
-		--[[local data = {
+		local data = {
 			Errno = 1000,
 			Errmsg = "222",
 			Data ={
@@ -197,45 +291,42 @@ function DmzjExtensions.RequestMangaDetail(url)
 		}
 		local bytes = assert(pb.encode("ComicDetailResponse", data))
 		print(bytes)
-		local data3 = pb.decode("ComicDetailResponse", bytes);--]]
+		local data3 = pb.decode("ComicDetailResponse", bytes);
 		
 		--print(data3.Errmsg)
-		local result = magicMethod.DmzjRSAStrJson(resq.Response.DataAsText,privateKey);
+		local result = magicMethod.DmzjRSAStr(resq.Response.DataAsText,privateKey);
 
-		--[[local s = tolua.tolstring(result)
+		local s = tolua.tolstring(result)
 		print(s)
-		local data3 = pb.decode("MangaDto", s);
+		local data3 = pb.decode("ComicDetailResponse", s);
 
-		print(data3.description)--]]
-		local data2 = json.decode(result)
-		print(data2["Data"].Id)
+		print(data3.Data.title)
 		local detailData = mangaDetail.New();
 
-		detailData.id = data2["Data"].Id;
-		detailData.title = data2["Data"].Title;
-		detailData.url = data2["Data"].Id;
-		detailData.cover = data2["Data"].Cover;
+		detailData.id = data3.Data.id;
+		detailData.title = data3.Data.title;
+		detailData.url = data3.Data.id;
+		detailData.cover = data3.Data.cover;
 		detailData.source = "2884190037559093788";
-		detailData.last_updatetime =(data2.Data.LastUpdatetime+0)*1000;
-		detailData.authors = data2["Data"].Authors[1].TagName;
-		detailData.status = data2.Data.Status[1].TagName;
-		detailData.types = data2.Data.TypesTypes[1].TagName;
-		detailData.description = data2.Data.Description;
+		--detailData.last_updatetime =(data2.Data.LastUpdatetime+0)*1000;
+		detailData.authors = data3.Data.authors[1].TagName;
+		detailData.status = data3.Data.status[1].TagName;
+		detailData.types = data3.Data.genres[1].TagName;
+		detailData.description = data3.Data.description;
 		
 		
 		local tempChapter = chapterList();
 		detailData.chapters:Add(tempChapter)
-		for i = 1, #data2.Data.Chapters do
-			for j = 1,#data2.Data.Chapters[i].Data do
+		for i = 1, #data3.Data.chapterGroups do
+			for j = 1,#data3.Data.chapterGroups[i].chapters do
 				local tempData = chapterData();
-				local v = data2.Data.Chapters[i].Data[j];
-				print(v["ChapterId"].. "")
-				tempData.chapter_id = v["ChapterId"].. "";
-				tempData.chapter_title = v["ChapterTitle"];
-				tempData.updatetime = v["Updatetime"];
-				tempData.filesize = v["Filesize"];
+				local v = data3.Data.chapterGroups[i].chapters[j];
+				tempData.chapter_id = v["id"].. "";
+				tempData.chapter_title = v["name"];
+				tempData.updatetime = v["updateTime"];
+				--tempData.filesize = v["Filesize"];
 				tempData.source = "2884190037559093788";
-				tempData.chapter_order = v["ChapterOrder"];
+				--tempData.chapter_order = v["ChapterOrder"];
 				tempData.url = string.format("https://api.m.dmzj1.com/comic/chapter/%d/%d.html", detailData.id,tempData.chapter_id) 
 				tempChapter.data:Add(tempData);
 			end
