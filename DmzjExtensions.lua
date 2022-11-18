@@ -47,7 +47,7 @@ function DmzjExtensions.Init()
 	local protoc;
 	print(ifMobile)
 	if ifMobile then
-		protoc = require "protoc"
+		protoc = dofile("protoc")
 	else
 		protoc = require "protoc"
 	end
