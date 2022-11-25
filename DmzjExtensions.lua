@@ -263,7 +263,8 @@ function DmzjExtensions.OnV4Fail(url)
 			tempData.filesize = v["filesize"];
 			tempData.source = "2884190037559093788";
 			tempData.chapter_order = v["chapter_order"];
-			tempData.url = string.format("https://api.m.dmzj1.com/comic/chapter/%d/%d.html", detailData.id,tempData.chapter_id) 
+			--tempData.url = string.format("https://m.dmzj.com/chapinfo/%d.html", detailData.id) 
+			--tempData.url = string.format("https://api.m.dmzj1.com/comic/chapter/%d/%d.html", detailData.id,tempData.chapter_id) 
 			tempChapter.data:Add(tempData);
 		end
 		globalHelper.OnMangaDetailPhraseComplete(detailData)
@@ -334,7 +335,8 @@ function DmzjExtensions.RequestMangaDetail(url)
 				--tempData.filesize = v["Filesize"];
 				tempData.source = "2884190037559093788";
 				--tempData.chapter_order = v["ChapterOrder"];
-				tempData.url = string.format("https://api.m.dmzj1.com/comic/chapter/%d/%d.html", detailData.id,tempData.chapter_id) 
+				--tempData.url = string.format("https://api.m.dmzj1.com/comic/chapter/%d/%d.html", detailData.id,tempData.chapter_id) 
+				tempData.url = string.format("https://m.dmzj.com/chapinfo/%d/%d.html", detailData.id,tempData.chapter_id) 
 				tempChapter.data:Add(tempData);
 			end
 		end
@@ -492,8 +494,8 @@ function DmzjExtensions.RequestMangaPageList(url,detail,chapterDa)
 		tempData.chapter = data;
 		print(info["chapter"])
 
-		data.chapter_name = info["chapter"]["chapter_name"];
-		for k,v in ipairs ( info["chapter"]["page_url"]) do 
+		data.chapter_name = info["chapter_name"];
+		for k,v in ipairs ( info["page_url"]) do 
 			print(v)
 			data.page_url:Add(v);
 		end
