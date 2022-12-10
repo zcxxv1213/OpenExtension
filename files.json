@@ -20,5 +20,10 @@
             "path":"CopyExtensions",
             "version": "1"
         }
+        {
+            "name": "Zero",
+            "path":"ZeroExtensions",
+            "version": "1"
+        }
     ]
 }
