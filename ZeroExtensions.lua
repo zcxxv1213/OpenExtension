@@ -1,3 +1,4 @@
+local json = require 'cjson'
 local ZeroExtensions = {};
 local playerPrefs = UnityEngine.PlayerPrefs;
 local mHttpProxy = BestHTTP.HTTPProxy;
@@ -14,6 +15,12 @@ local chapterList = ChapterList;
 local chapterData = ChapterData;
 local pageAllData = PageAllData;
 local stringHelper = StringHelper;
+local formUsage = BestHTTP.Forms.HTTPFormUsage;
+local httpMethod = BestHTTP.HTTPMethods;
+local uiHelper = UIHelper;
+local ifLoginSuccess = false;
+local playerPrefs = UnityEngine.PlayerPrefs;
+local cookiseResultStr = "";
 function ZeroExtensions.GetVersion()
 	return 2;
 end
@@ -30,14 +37,172 @@ function ZeroExtensions.GetExtensionName()
 	return "Zero搬运";
 end
 function ZeroExtensions.Init()
-	
+	if playerPrefs.HasKey("ZeroCookies") then
+		local tempCookies = playerPrefs.GetString("ZeroCookies")
+		ZeroExtensions.PhraseCookies(tempCookies);
+		ifLoginSuccess = true;
+	end
+
 	if playerPrefs.HasKey("ZeroPort") then
 		proxyPort = playerPrefs.GetInt("ZeroPort")
 	end
 end
 
+function ZeroExtensions.PhraseCookies(cookStrings)
+	print(cookStrings)
+	local strs = stringHelper.RexMatchAll(cookStrings,"cutline","cutend");
+	local cookiesTable = {};
+	for i = 0, strs.Count-  1, 1 do
+		local result = stringHelper.Replace(strs[i],"cutline","");
+		result = stringHelper.Replace(result,"cutend","");
+		table.insert(cookiesTable,result);
+		if i ~= 0 then
+			cookiseResultStr = cookiseResultStr..";";
+		end
+		cookiseResultStr = cookiseResultStr..result;
+	end
+end
+
+function ZeroExtensions.CheckIfLoginSuccess()
+	return ifLoginSuccess;
+end
+
+function ZeroExtensions.IfCanLogin()
+	return true;
+end
+
+function ZeroExtensions.Login(mail,pass)
+	local callBack = function( resq,resp)
+		if resq.State == httpStates.Aborted or resq.State == httpStates.Error or  resq.State == httpStates.ConnectionTimedOut 
+		or  resq.State == httpStates.TimedOut 
+		then
+			uiHelper.ShowTipsUI("登录失败");
+			print(resq.Response.DataAsText)
+			return;
+		end
+		print(resq.Response.DataAsText)
+		local result = string.find(resq.Response.DataAsText,mail);
+		if result then
+			print(resq.Response.Cookies:ToString())
+			ZeroExtensions.SaveCookies(resq.Response.Cookies)
+			uiHelper.ShowTipsUI("登录成功");
+			return;
+		end
+
+		local regexStrs = stringHelper.RexMatchAll(resq.Response.DataAsText,"loginhash=","\">");
+		local loginHashResult = "";
+		local loginFormhash = "";
+		for i = 0, regexStrs.Count - 1, 1 do
+			print(regexStrs[i])
+			local temp = stringHelper.Replace(regexStrs[i],"loginhash=","");
+			temp = stringHelper.Replace(temp,">","");
+			temp = stringHelper.Replace(temp,"\"","");
+			loginHashResult = temp;
+			break;
+		end
+
+		local regexStrs = stringHelper.RexMatchAll(resq.Response.DataAsText,"name=\"formhash\"",">");
+		for i = 0, regexStrs.Count - 1, 1 do
+			local valueText = stringHelper.RexMatchAll(regexStrs[i],"value=\"","\"");
+			local temp = stringHelper.Replace(valueText[0],"value=\"","");
+			temp = stringHelper.Replace(temp,"\"","");
+			loginFormhash = temp;
+			break;
+		end
+		ZeroExtensions.DoLogin(mail,pass,loginHashResult,loginFormhash);
+		print(loginHashResult,loginFormhash)
+	end
+	local request = ZeroExtensions.GetRequest("http://www.zerobywblac.com/member.php?mod=logging&action=login&infloat=yes&frommessage&inajax=1&ajaxtarget=messagelogin");
+	request.Callback=callBack;
+	request:Send();
+	return request;
+end
+
+function ZeroExtensions.SaveCookies(cookie)
+	local cookiesText = "";
+	for i = 0, cookie.Count -1, 1 do
+		cookiesText = cookiesText .. "cutline"..cookie[i]:ToString().."cutend";
+		print(cookiesText)
+	end
+	playerPrefs.SetString("ZeroCookies",cookiesText);
+
+	ZeroExtensions.PhraseCookies(cookiesText);
+end
+
+function ZeroExtensions.DoLogin(mail,pass,loginHashResult,loginFormhash)
+	local callBack = function( resq,resp)
+		if resq.State == httpStates.Aborted or resq.State == httpStates.Error or  resq.State == httpStates.ConnectionTimedOut 
+		or  resq.State == httpStates.TimedOut 
+		then
+			uiHelper.ShowTipsUI("登录失败");
+			print(resq.Response.DataAsText)
+			return;
+		end
+		print(resq.Response.DataAsText)
+		ZeroExtensions.SaveCookies(resq.Response.Cookies)
+		uiHelper.ShowTipsUI("登录成功");
+		--[[local jsonStr = json.decode(resq.Response.DataAsText)
+		if jsonStr["code"] ~= 200 then
+			print("错误代码" .. jsonStr["code"]);
+			ifLoginSuccess = false;
+			uiHelper.ShowTipsUI("登录失败");
+		else
+			token = jsonStr["data"]["token"];
+			print("LoginToken"..token)
+			playerPrefs.SetString("PicaToken",token);
+			print("Success")
+			uiHelper.ShowTipsUI("登录成功");
+			ifLoginSuccess = true;
+		end--]]
+	end
+	local mangaTextureRequest = mHTTPRequest(nil,httpMethod.Post);
+	mangaTextureRequest.FormUsage = formUsage.UrlEncoded;
+	mangaTextureRequest:AddField("formhash",loginFormhash)
+	mangaTextureRequest:AddField("loginfield","username")
+
+	mangaTextureRequest:AddField("username",mail)
+	mangaTextureRequest:AddField("password",pass)
+	mangaTextureRequest:AddField("questionid","0")
+	mangaTextureRequest:AddField("answer","")
+
+	mangaTextureRequest:AddField("referer","http://www.zerobywblac.com/home.php?mod=space&do=notice&view=system")
+	mangaTextureRequest:SetHeader("Content-Type", "application/x-www-form-urlencoded");
+	mangaTextureRequest:SetHeader("Content-Length", "192");
+	mangaTextureRequest:SetHeader("User-Agent","okhttp/3.8.1");
+	mangaTextureRequest:SetHeader("Cookie","Hm_lvt_871a5fb0afe1fd110b5c6d0195e27b86=1670261207,1670658094,1670663661,1670699050; kd5S_2132_sid=GzLonq; kd5S_2132_saltkey=bJgcq2jL; kd5S_2132_lastvisit=1670698183; Hm_lpvt_871a5fb0afe1fd110b5c6d0195e27b86=1670701784; kd5S_2132_sendmail=1; kd5S_2132_lastact=1670701784%09member.php%09logging");
+	mangaTextureRequest:SetHeader("Host","www.zerobywblac.com");
+	mangaTextureRequest:SetHeader("Origin","www.zerobywblac.com");
+
+	mangaTextureRequest:SetHeader("referer", "http://www.zerobywblac.com/home.php?mod=space&do=notice&view=system");
+	local url = string.format("http://www.zerobywblac.com/member.php?mod=logging&action=login&loginsubmit=yes&frommessage&loginhash%s&inajax=1",loginHashResult)
+	local uri = mUri(url);
+	mangaTextureRequest.Uri = uri;
+	local jsonTable = {
+		formhash = loginFormhash,
+		referer= "http://www.zerobywblac.com/home.php?mod=space&do=notice&view=system",
+		loginfield =  "username",
+		username = mail ,
+		password = pass ,
+		questionid=0,
+		answer="",
+	}
+	local jsonStr = json.encode(jsonTable);
+	print(jsonStr)
+	mangaTextureRequest.Callback = callBack;
+	mangaTextureRequest:Send();
+end
+
+function ZeroExtensions.UrlEncode(s)  
+	s = string.gsub(s, "([^%w%.%- ])", function(c) return string.format("%%%02X", string.byte(c)) end)  
+   return string.gsub(s, " ", "+")  
+end  
+
 function ZeroExtensions.GetRequest(url)
 	local mangaTextureRequest = mHTTPRequest(mUri(url));
+	print(cookiseResultStr)
+	if cookiseResultStr then
+		mangaTextureRequest:SetHeader("Cookie",cookiseResultStr);
+	end
 	mangaTextureRequest.Tag = url;
 	print(url)
 	if proxyPort ~= 0 then
@@ -100,7 +265,7 @@ function ZeroExtensions.RequestMangaDetail(url)
 
 		detailData.cover = selectElement[0]:GetAttribute("src");
 
-
+		detailData.url = url;
 		local result1 = htmlHelper.DocumentQuerySelectItems(document,"li > div.uk-alert");
 		detailData.description = result1[0].TextContent;
 
