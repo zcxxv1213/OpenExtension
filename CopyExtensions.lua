@@ -362,7 +362,7 @@ function CopyExtensions.RequestMangaPageList(url,detail,chapterDa)
 		print(resultStr)
 
 		--local regexStrs = stringHelper.RexMatchAll(resultStr,"cdn.","}");
-		local regexStrs = stringHelper.RexMatchAll(resultStr,"cdn.cxils.com","}");
+		local regexStrs = stringHelper.RexMatchAll(resultStr,"hi77-overseas.mangafuna.xyz","}");
 		print(regexStrs);
 		data.chapter_name = "";
 		regexStrs:ForEach(function(v)
