@@ -381,6 +381,10 @@ function PicaExtensions.UrlEncode(s)
 end  
 
 function PicaExtensions.RequestMangaPageList(url,detail,chapterDa)
+	local tempData = pageAllData.New();
+	tempData.source = "9988005021315885225";
+	local pageData = PageData.New();
+	tempData.chapter = pageData;
 	local callBack = function( resq,resp)
 		if resq.State == httpStates.Aborted or resq.State == httpStates.Error or  resq.State == httpStates.ConnectionTimedOut 
 		or  resq.State == httpStates.TimedOut 
@@ -394,21 +398,56 @@ function PicaExtensions.RequestMangaPageList(url,detail,chapterDa)
 			ifLoginSuccess = false;
 			uiHelper.ShowTipsUI("错误代码" .. info["code"]);
 		else
-			local tempData = pageAllData.New();
-			tempData.source = "9988005021315885225";
-			local data = PageData.New();
-			tempData.chapter = data;
-			data.chapter_name = info["data"]["ep"]["title"];
-			for k,v in ipairs ( info["data"]["pages"]["docs"]) do
-				data.page_url:Add(v["media"]["path"]);
-			end
-			globalHelper.OnMangaPagesPhraseComplete(url,tempData,detail,chapterDa)
+			
+			pageData.chapter_name = info["data"]["ep"]["title"];
+			
+			print(info["data"]["pages"]["total"])
+			print(info["data"]["pages"]["limit"])
+			local currentPage = 1;
+			PicaExtensions.OnMagePageBack(url,detail,chapterDa,info,tempData,pageData,currentPage)
 		end
 	end
 	print(url)
 	local request = PicaExtensions.GetRequest(url);
 	request.Callback=callBack;
 	request:Send();
+end
+
+function PicaExtensions.RequestMangaPageListWithPage(url,detail,chapterDa,jsonData,tempData,pageData,page)
+	local callBack = function( resq,resp)
+		if resq.State == httpStates.Aborted or resq.State == httpStates.Error or  resq.State == httpStates.ConnectionTimedOut 
+		or  resq.State == httpStates.TimedOut 
+		then
+			return;
+		end
+		print(resq.Response.DataAsText);
+		local info = json.decode(resq.Response.DataAsText)
+		if info["code"] ~= 200 then
+			print("错误代码" .. info);
+			ifLoginSuccess = false;
+			uiHelper.ShowTipsUI("错误代码" .. info["code"]);
+		else
+			PicaExtensions.OnMagePageBack(url,detail,chapterDa,info,tempData,pageData,currentPage)
+		end
+	end
+	local replaceStr = "page="..page;
+	local targetStr = "page="..(page-1);
+	local requestUrl = stringHelper.Replace(url,targetStr,replaceStr);
+	print(requestUrl)
+	local request = PicaExtensions.GetRequest(requestUrl);
+	request.Callback=callBack;
+	request:Send();
+end
+
+function PicaExtensions.OnMagePageBack(url,detail,chapterDa,jsonData,tempData,pageData,currentPage)
+	for k,v in ipairs ( jsonData["data"]["pages"]["docs"]) do
+		pageData.page_url:Add(v["media"]["path"]);
+	end
+	if pageData.page_url.Count < jsonData["data"]["pages"]["total"] then
+		PicaExtensions.RequestMangaPageListWithPage(url,detail,chapterDa,jsonData,tempData,pageData,currentPage + 1)
+	else
+		globalHelper.OnMangaPagesPhraseComplete(url,tempData,detail,chapterDa)
+	end
 end
 
 function PicaExtensions.StrightGetMangaDetail(mangaId)
