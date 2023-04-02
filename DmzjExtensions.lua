@@ -159,7 +159,7 @@ function DmzjExtensions.Init()
 		"Safari/537.36 "..
 		"Tachiyomi/1.0");
 
-		mangaRequest:SetHeader("referer", "http://www.dmzj1.com/");
+		mangaRequest:SetHeader("referer", "http://www.idmzj.com/");
 	end
 end
 
@@ -188,7 +188,7 @@ function DmzjExtensions.RequestPopularManga(page)
 			tempData.types = v["types"]
 			tempData.last_updatetime = v["last_updatetime"]
 			tempData.num = v["num"]
-			tempData.url = string.format("http://v3api.dmzj1.com/comic/comic_%d.json?version=2.7.019", v.id)
+			tempData.url = string.format("http://v3api.idmzj.com/comic/comic_%d.json?version=2.7.019", v.id)
 			tempData.source = "2884190037559093788";
 			table.insert(list,tempData);
 		end
@@ -204,7 +204,7 @@ function DmzjExtensions.RequestPopularManga(page)
 	mangaRequest.Callback=callBack;
 	mangaRequest:Send();--]]
 
-	local request = DmzjExtensions.GetRequest(string.format("https://v3api.dmzj1.com/classify/0/0/%d.json",page - 1));
+	local request = DmzjExtensions.GetRequest(string.format("https://v3api.idmzj.com/classify/0/0/%d.json",page - 1));
 	request.Callback=callBack;
 	request:Send();
 end
@@ -264,7 +264,7 @@ function DmzjExtensions.OnV4Fail(url)
 			tempData.source = "2884190037559093788";
 			tempData.chapter_order = v["chapter_order"];
 			--tempData.url = string.format("https://m.dmzj.com/chapinfo/%d.html", detailData.id) 
-			--tempData.url = string.format("https://api.m.dmzj1.com/comic/chapter/%d/%d.html", detailData.id,tempData.chapter_id) 
+			--tempData.url = string.format("https://api.m.idmzj.com/comic/chapter/%d/%d.html", detailData.id,tempData.chapter_id) 
 			tempChapter.data:Add(tempData);
 		end
 		globalHelper.OnMangaDetailPhraseComplete(detailData)
@@ -335,8 +335,8 @@ function DmzjExtensions.RequestMangaDetail(url)
 				--tempData.filesize = v["Filesize"];
 				tempData.source = "2884190037559093788";
 				--tempData.chapter_order = v["ChapterOrder"];
-				--tempData.url = string.format("https://api.m.dmzj1.com/comic/chapter/%d/%d.html", detailData.id,tempData.chapter_id) 
-				tempData.url = string.format("https://m.dmzj.com/chapinfo/%d/%d.html", detailData.id,tempData.chapter_id) 
+				--tempData.url = string.format("https://api.m.idmzj.com/comic/chapter/%d/%d.html", detailData.id,tempData.chapter_id) 
+				tempData.url = string.format("https://m.idmzj.com/chapinfo/%d/%d.html", detailData.id,tempData.chapter_id) 
 				tempChapter.data:Add(tempData);
 			end
 		end
@@ -347,7 +347,7 @@ function DmzjExtensions.RequestMangaDetail(url)
 	local cid = string.match(url, "%d+")
 	--print(string.format("https://api.dmzj.com/dynamic/comicinfo/%s",cid .. ".json"))
 	--local request = DmzjExtensions.GetRequest(string.format("https://api.dmzj.com/dynamic/comicinfo/%s",cid .. ".json"));
-	local request = DmzjExtensions.GetRequest(string.format("https://nnv4api.dmzj.com/comic/detail/%s?uid=2665531",cid .. ""));
+	local request = DmzjExtensions.GetRequest(string.format("https://nnv4api.idmzj.com/comic/detail/%s?uid=2665531",cid .. ""));
 	request.Callback=callBack;
 	request:Send();
 end
@@ -413,7 +413,7 @@ function DmzjExtensions.GetRequest(url)
 		"Mobile Safari/537.36"..
 		"yumanga/1.0");
 
-	mangaTextureRequest:SetHeader("referer", "https://www.dmzj1.com/");
+	mangaTextureRequest:SetHeader("referer", "https://www.idmzj.com/");
 	mangaTextureRequest.Tag = url;
 	return mangaTextureRequest;
 end
@@ -454,7 +454,7 @@ function DmzjExtensions.RequestGenreManga(url,page)
 			tempData.title = v["name"]
 			tempData.authors = v["authors"] == nil or ""
 			tempData.status = v["status"]
-			tempData.cover = string.format("https://images.dmzj.com/%s",v["cover"])
+			tempData.cover = string.format("https://images.idmzj.com/%s",v["cover"])
 			tempData.types = v["types"]
 			tempData.last_updatetime = v["last_updatetime"]
 			--tempData.num = v["num"]
@@ -545,7 +545,7 @@ function DmzjExtensions.UpdateManga(url)
 
 	local cid = string.match(url, "%d+")
 	local request = DmzjExtensions.GetRequest(string.format("https://api.dmzj.com/dynamic/comicinfo/%s",cid .. ".json"));
-	--local request = DmzjExtensions.GetRequest(string.format("http://v3api.dmzj1.com/%s",url));
+	--local request = DmzjExtensions.GetRequest(string.format("http://v3api.idmzj.com/%s",url));
 	--request.Callback=callBack;
 	request:Send();
 	return request;
@@ -584,7 +584,7 @@ function DmzjExtensions.Update(resq,url)
 			tempData.filesize = v["filesize"];
 			tempData.source = "2884190037559093788";
 			tempData.chapter_order = v["chapter_order"];
-			tempData.url = string.format("https://api.m.dmzj1.com/comic/chapter/%d/%d.html", detailData.id,tempData.chapter_id) 
+			tempData.url = string.format("https://api.m.idmzj.com/comic/chapter/%d/%d.html", detailData.id,tempData.chapter_id) 
 			tempChapter.data:Add(tempData);
 		end
 	return detailData;
@@ -601,5 +601,6 @@ function DmzjExtensions.GetGenreTable()
 end
 
 return DmzjExtensions;
+
 
 
