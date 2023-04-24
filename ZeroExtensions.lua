@@ -112,6 +112,7 @@ function ZeroExtensions.Login(mail,pass)
 		ZeroExtensions.DoLogin(mail,pass,loginHashResult,loginFormhash);
 		print(loginHashResult,loginFormhash)
 	end
+	print(1)
 	local request = ZeroExtensions.GetRequest("http://www.zerobyw3.com/member.php?mod=logging&action=login&infloat=yes&frommessage&inajax=1&ajaxtarget=messagelogin");
 	request.Callback=callBack;
 	request:Send();
@@ -165,21 +166,22 @@ function ZeroExtensions.DoLogin(mail,pass,loginHashResult,loginFormhash)
 	mangaTextureRequest:AddField("questionid","0")
 	mangaTextureRequest:AddField("answer","")
 
-	mangaTextureRequest:AddField("referer","http://www.zerobyw3.com/home.php?mod=space&do=notice&view=system")
+	mangaTextureRequest:AddField("referer","http://www.zerobyw3.com/home.php?mod=spacecp&ac=usergroup")
 	mangaTextureRequest:SetHeader("Content-Type", "application/x-www-form-urlencoded");
-	mangaTextureRequest:SetHeader("Content-Length", "192");
+	mangaTextureRequest:SetHeader("Content-Length", "178");
 	mangaTextureRequest:SetHeader("User-Agent","okhttp/3.8.1");
-	mangaTextureRequest:SetHeader("Cookie","Hm_lvt_871a5fb0afe1fd110b5c6d0195e27b86=1670261207,1670658094,1670663661,1670699050; kd5S_2132_sid=GzLonq; kd5S_2132_saltkey=bJgcq2jL; kd5S_2132_lastvisit=1670698183; Hm_lpvt_871a5fb0afe1fd110b5c6d0195e27b86=1670701784; kd5S_2132_sendmail=1; kd5S_2132_lastact=1670701784%09member.php%09logging");
+	mangaTextureRequest:SetHeader("Cookie","Ckng_2132_sid=YgvGIe; Ckng_2132_saltkey=Fw1BW1QJ; Ckng_2132_lastvisit=1682344319; Ckng_2132__refer=%252Fhome.php%253Fmod%253Dspacecp%2526ac%253Dusergroup; Ckng_2132_sendmail=1; Ckng_2132_lastact=1682347919%09member.php%09logging");
 	mangaTextureRequest:SetHeader("Host","www.zerobyw3.com");
 	mangaTextureRequest:SetHeader("Origin","www.zerobyw3.com");
 
-	mangaTextureRequest:SetHeader("referer", "http://www.zerobyw3.com/home.php?mod=space&do=notice&view=system");
-	local url = string.format("http://www.zerobyw3.com/member.php?mod=logging&action=login&loginsubmit=yes&frommessage&loginhash%s&inajax=1",loginHashResult)
+	mangaTextureRequest:SetHeader("referer", "http://www.zerobyw3.com/home.php?mod=spacecp&ac=usergroup");
+	local url = string.format("http://www.zerobyw3.com/member.php?mod=logging&action=login&loginsubmit=yes&frommessage&loginhash=%s&inajax=1",loginHashResult)
 	local uri = mUri(url);
+	print(url)
 	mangaTextureRequest.Uri = uri;
 	local jsonTable = {
 		formhash = loginFormhash,
-		referer= "http://www.zerobyw3.com/home.php?mod=space&do=notice&view=system",
+		referer= "http://www.zerobyw3.com/home.php?mod=spacecp&ac=usergroup",
 		loginfield =  "username",
 		username = mail ,
 		password = pass ,
