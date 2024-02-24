@@ -370,19 +370,15 @@ function ZeroExtensions.RequestSearchManga(query)
 	end
 	print(query)
 	print(globalHelper.GetCurrentSearchText())
- 
-	local utf8String = hexToUtf8String(globalHelper.GetCurrentSearchText())  
+	local hex = globalHelper.GetCurrentSearchText():gsub(",$", "") 
+	print(hex)
+	local utf8String = hexToUtf8String(hex)  
 	print(utf8String)
 	local request = ZeroExtensions.GetRequest(string.format("http://www.zerobywns.com/plugin.php?id=jameson_manhua&a=search&c=index&keyword=%s&page=%s",utf8String,1));
 	request.Callback=callBack;
 	request:Send();
 end
-function hexToUtf8String(hexStr)  
-    -- 去除尾部的逗号（如果存在）  
-    if hexStr:sub(-1) == "," then  
-        hexStr = hexStr:sub(1, -2)  
-    end  
-  
+function hexToUtf8String(hexStr)
     -- 初始化结果字符串  
     local utf8Str = ""  
   
@@ -393,7 +389,7 @@ function hexToUtf8String(hexStr)
         local byte2 = hexStr:sub(i + 1, i + 1)  
   
         -- 检查提取的字符串是否有效  
-        if byte1 and byte2 then  
+        if byte1:match("^%x") and byte2:match("^%x") then  
             -- 将这两个十六进制数字转换为一个字节  
             local byteValue = tonumber(byte1 .. byte2, 16)  
   
@@ -405,8 +401,8 @@ function hexToUtf8String(hexStr)
                 print("Invalid hex pair: " .. byte1 .. byte2)  
             end  
         else  
-            -- 如果提取的字符串无效，打印错误信息  
-            print("Invalid index or character at position " .. i)  
+            -- 如果提取的字符串无效，打印错误信息并跳过  
+            print("Invalid hex pair: " .. byte1 .. byte2)  
         end  
     end  
   
