@@ -371,33 +371,33 @@ function ZeroExtensions.RequestSearchManga(query)
 	print(query)
 	print(globalHelper.GetCurrentSearchText())
 	
-	local utf8String = hexListToString(globalHelper.GetCurrentSearchText())  
+	local utf8String = hexToUtf8String(globalHelper.GetCurrentSearchText())  
 	print(utf8String)
 	local request = ZeroExtensions.GetRequest(string.format("http://www.zerobywns.com/plugin.php?id=jameson_manhua&a=search&c=index&keyword=%s&page=%s",utf8String,1));
 	request.Callback=callBack;
 	request:Send();
 end
-function hexListToString(hexList)  
+function hexToUtf8String(hexStr)  
     -- 去除尾部的逗号（如果存在）  
-    if hexList:sub(-1) == "," then  
-        hexList = hexList:sub(1, -2)  
+    if hexStr:sub(-1) == "," then  
+        hexStr = hexStr:sub(1, -2)  
     end  
   
-    -- 按逗号分割十六进制字符串  
-    local hexParts = {}  
-    for part in hexList:gmatch("(%w+)") do  
-        table.insert(hexParts, part)  
+    -- 分割字符串以逗号为分隔符  
+    local hexPairs = {}  
+    for pair in hexStr:gmatch("(%w+),%w+") do  
+        table.insert(hexPairs, pair)  
     end  
   
-    -- 转换十六进制部分到字节并构建字符串  
-    local result = ""  
-    for i = 1, #hexParts, 2 do  
-        local byte1 = tonumber(hexParts[i], 16)  
-        local byte2 = tonumber(hexParts[i + 1], 16)  
-        result = result .. string.char(byte1, byte2)  
+    -- 转换十六进制对到字节并构建字符串  
+    local utf8Str = ""  
+    for _, hexPair in ipairs(hexPairs) do  
+        local byte1 = tonumber(hexPair:sub(1, 2), 16)  
+        local byte2 = tonumber(hexPair:sub(4, 5), 16)  
+        utf8Str = utf8Str .. string.char(byte1, byte2)  
     end  
   
-    return result  
+    return utf8Str  
 end  
 function ZeroExtensions.GetGenreTable()
 	return {
