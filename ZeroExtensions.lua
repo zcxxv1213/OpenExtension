@@ -370,11 +370,35 @@ function ZeroExtensions.RequestSearchManga(query)
 	end
 	print(query)
 	print(globalHelper.GetCurrentSearchText())
-	local request = ZeroExtensions.GetRequest(string.format("http://www.zerobywns.com/plugin.php?id=jameson_manhua&a=search&c=index&keyword=%s&page=%s",query,1));
+	
+	local utf8String = hexListToString(globalHelper.GetCurrentSearchText())  
+	print(utf8String)
+	local request = ZeroExtensions.GetRequest(string.format("http://www.zerobywns.com/plugin.php?id=jameson_manhua&a=search&c=index&keyword=%s&page=%s",utf8String,1));
 	request.Callback=callBack;
 	request:Send();
 end
-
+function hexListToString(hexList)  
+    -- 去除尾部的逗号（如果存在）  
+    if hexList:sub(-1) == "," then  
+        hexList = hexList:sub(1, -2)  
+    end  
+  
+    -- 按逗号分割十六进制字符串  
+    local hexParts = {}  
+    for part in hexList:gmatch("(%w+)") do  
+        table.insert(hexParts, part)  
+    end  
+  
+    -- 转换十六进制部分到字节并构建字符串  
+    local result = ""  
+    for i = 1, #hexParts, 2 do  
+        local byte1 = tonumber(hexParts[i], 16)  
+        local byte2 = tonumber(hexParts[i + 1], 16)  
+        result = result .. string.char(byte1, byte2)  
+    end  
+  
+    return result  
+end  
 function ZeroExtensions.GetGenreTable()
 	return {
 		First = "http://www.zerobywns.com/plugin.php?id=jameson_manhua&c=index&a=ku&&page=%s",
