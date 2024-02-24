@@ -372,7 +372,7 @@ function ZeroExtensions.RequestSearchManga(query)
 	print(globalHelper.GetCurrentSearchText())
 	local hex = globalHelper.GetCurrentSearchText():gsub(",$", "") 
 	print(hex)
-	local utf8String = hexStringToUtf8(hex)  
+	local utf8String = hexToUtf8(hex)  
 	if utf8String then  
 		print("Converted UTF-8 string:", utf8String) -- 输出转换后的UTF-8字符串  
 	else  
@@ -383,47 +383,23 @@ function ZeroExtensions.RequestSearchManga(query)
 	request.Callback=callBack;
 	request:Send();
 end
-function hexStringToUtf8(hexStr)  
-    -- 输出调试信息  
-    print("Original hex string:", hexStr)  
+function hexToUtf8(hexStr)  
+    -- 移除字符串中的空格  
+    hexStr = hexStr:gsub("%s", "")  
   
-    -- 去除字符串中可能存在的空格和尾部逗号  
-    hexStr = hexStr:gsub("%s", ""):gsub(",$", "")  
-    -- 输出处理后的字符串  
-    print("Processed hex string:", hexStr)  
+    -- 使用 gsub 分割字符串，并用辅助函数处理每对十六进制数  
+    local utf8Str = hexStr:gsub("(%x%x)", function(bytePair)  
+        return string.char(tonumber(bytePair, 16))  
+    end)  
   
-    -- 初始化结果字符串  
-    local utf8Str = ""  
-  
-    -- 检查字符串长度是否为偶数  
-    if #hexStr % 2 ~= 0 then  
-        return nil, "Invalid hex string: odd number of characters"  
-    end  
-  
-    -- 遍历字符串，每次处理两个字符  
-    for i = 1, #hexStr, 2 do  
-        -- 提取两个十六进制数字  
-        local byte1 = hexStr:sub(i, i)  
-        local byte2 = hexStr:sub(i + 1, i + 1)  
-  
-        -- 输出提取的字节对  
-        print("Byte pair:", byte1, byte2)  
-  
-        -- 将这两个十六进制数字转换成字节  
-        local byteValue = tonumber(byte1 .. byte2, 16)  
-  
-        -- 检查转换是否成功  
-        if not byteValue then  
-            return nil, "Invalid hex pair: " .. byte1 .. byte2  
-        end  
-  
-        -- 如果转换成功，则添加到结果字符串中  
-        utf8Str = utf8Str .. string.char(byteValue)  
-    end  
-  
-    -- 返回转换后的UTF-8字符串  
     return utf8Str  
 end  
+  
+-- 示例使用  
+local hexStr = "E5,A5,B3,E5,AD,90" -- 十六进制字符串  
+local utf8String = hexToUtf8(hexStr) -- 调用函数进行转换  
+  
+print(utf8String) -- 输出转换后的UTF-8字符串
 function ZeroExtensions.GetGenreTable()
 	return {
 		First = "http://www.zerobywns.com/plugin.php?id=jameson_manhua&c=index&a=ku&&page=%s",
