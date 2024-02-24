@@ -377,43 +377,36 @@ function ZeroExtensions.RequestSearchManga(query)
 	request.Callback=callBack;
 	request:Send();
 end
-function hexToUtf8Char(hexByte1, hexByte2)  
-    -- 将每个十六进制数字转换为一个字节  
-    local byte1 = tonumber(hexByte1, 16)  
-    local byte2 = tonumber(hexByte2, 16)  
-  
-    -- 如果任一转换失败，返回nil  
-    if byte1 == nil or byte2 == nil then  
-        return nil  
-    end  
-  
-    -- 返回由两个字节组成的字符串  
-    return string.char(byte1, byte2)  
-end  
-  
 function hexToUtf8String(hexStr)  
     -- 去除尾部的逗号（如果存在）  
     if hexStr:sub(-1) == "," then  
         hexStr = hexStr:sub(1, -2)  
     end  
   
-    -- 按逗号分割字符串以获取每个字节对  
-    local bytePairs = {}  
-    for pair in hexStr:gmatch("(%w+),(%w+)") do  
-        table.insert(bytePairs, pair)  
-    end  
-  
-    -- 转换每个字节对到UTF-8并构建字符串  
+    -- 初始化结果字符串  
     local utf8Str = ""  
-    for i = 1, #bytePairs, 2 do  
-        local hexByte1 = bytePairs[i]  
-        local hexByte2 = bytePairs[i + 1]  
-        local utf8Char = hexToUtf8Char(hexByte1, hexByte2)  
-        if utf8Char then  
-            utf8Str = utf8Str .. utf8Char  
+  
+    -- 遍历字符串中的每个字节对  
+    for i = 1, #hexStr, 2 do  
+        -- 提取当前字节对的两个十六进制数字  
+        local byte1 = hexStr:sub(i, i)  
+        local byte2 = hexStr:sub(i + 1, i + 1)  
+  
+        -- 检查提取的字符串是否有效  
+        if byte1 and byte2 then  
+            -- 将这两个十六进制数字转换为一个字节  
+            local byteValue = tonumber(byte1 .. byte2, 16)  
+  
+            -- 如果转换成功，将字节添加到结果字符串中  
+            if byteValue then  
+                utf8Str = utf8Str .. string.char(byteValue)  
+            else  
+                -- 如果转换失败，打印错误信息  
+                print("Invalid hex pair: " .. byte1 .. byte2)  
+            end  
         else  
-            -- 如果转换失败，打印错误信息并跳过  
-            print("Invalid hex pair: " .. hexByte1 .. "," .. hexByte2)  
+            -- 如果提取的字符串无效，打印错误信息  
+            print("Invalid index or character at position " .. i)  
         end  
     end  
   
