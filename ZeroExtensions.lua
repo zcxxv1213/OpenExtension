@@ -378,8 +378,8 @@ function ZeroExtensions.RequestSearchManga(query)
 	else  
 		print("Error:", errorMessage) -- 输出错误信息  
 	end
-	print(utf8String)
-	local request = ZeroExtensions.GetRequest(string.format("http://www.zerobywns.com/plugin.php?id=jameson_manhua&a=search&c=index&keyword=%s&page=%s",utf8String,1));
+	print("女子")
+	local request = ZeroExtensions.GetRequest(string.format("http://www.zerobywns.com/plugin.php?id=jameson_manhua&a=search&c=index&keyword=%s&page=%s","女子",1));
 	request.Callback=callBack;
 	request:Send();
 end
