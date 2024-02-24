@@ -372,40 +372,43 @@ function ZeroExtensions.RequestSearchManga(query)
 	print(globalHelper.GetCurrentSearchText())
 	local hex = globalHelper.GetCurrentSearchText():gsub(",$", "") 
 	print(hex)
-	local utf8String = hexToUtf8String(hex)  
+	local utf8String = hexStringToUtf8(hex)  
 	print(utf8String)
 	local request = ZeroExtensions.GetRequest(string.format("http://www.zerobywns.com/plugin.php?id=jameson_manhua&a=search&c=index&keyword=%s&page=%s",utf8String,1));
 	request.Callback=callBack;
 	request:Send();
 end
-function hexToUtf8String(hexStr)
+function hexStringToUtf8(hexStr)  
+    -- 去除字符串中可能存在的空格和尾部逗号  
+    hexStr = hexStr:gsub("%s", ""):gsub(",$", "")  
+  
     -- 初始化结果字符串  
     local utf8Str = ""  
   
-    -- 遍历字符串中的每个字节对  
+    -- 检查字符串长度是否为偶数，因为每个字节对需要两个十六进制数字  
+    if #hexStr % 2 ~= 0 then  
+        return nil, "Invalid hex string: odd number of characters"  
+    end  
+  
+    -- 遍历字符串，每次处理两个字符  
     for i = 1, #hexStr, 2 do  
-        -- 提取当前字节对的两个十六进制数字  
+        -- 提取两个十六进制数字  
         local byte1 = hexStr:sub(i, i)  
         local byte2 = hexStr:sub(i + 1, i + 1)  
   
-        -- 检查提取的字符串是否有效  
-        if byte1:match("^%x") and byte2:match("^%x") then  
-            -- 将这两个十六进制数字转换为一个字节  
-            local byteValue = tonumber(byte1 .. byte2, 16)  
+        -- 将这两个十六进制数字转换成字节  
+        local byteValue = tonumber(byte1 .. byte2, 16)  
   
-            -- 如果转换成功，将字节添加到结果字符串中  
-            if byteValue then  
-                utf8Str = utf8Str .. string.char(byteValue)  
-            else  
-                -- 如果转换失败，打印错误信息  
-                print("Invalid hex pair: " .. byte1 .. byte2)  
-            end  
+        -- 如果转换成功，则添加到结果字符串中  
+        if byteValue then  
+            utf8Str = utf8Str .. string.char(byteValue)  
         else  
-            -- 如果提取的字符串无效，打印错误信息并跳过  
-            print("Invalid hex pair: " .. byte1 .. byte2)  
+            -- 如果转换失败，返回错误  
+            return nil, "Invalid hex pair: " .. byte1 .. byte2  
         end  
     end  
   
+    -- 返回转换后的UTF-8字符串  
     return utf8Str  
 end  
 function ZeroExtensions.GetGenreTable()
