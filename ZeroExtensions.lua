@@ -377,31 +377,40 @@ function ZeroExtensions.RequestSearchManga(query)
 	request.Callback=callBack;
 	request:Send();
 end
+function hexToUtf8Char(hex)  
+    -- 确保hex是一个完整的3字节UTF-8字符（6个十六进制数字）  
+    if #hex ~= 6 then  
+        error("Invalid hex string length: " .. #hex)  
+    end  
+  
+    -- 将每两个十六进制数字转换为一个字节  
+    local byte1 = tonumber(hex:sub(1, 2), 16)  
+    local byte2 = tonumber(hex:sub(3, 4), 16)  
+    local byte3 = tonumber(hex:sub(5, 6), 16)  
+  
+    -- 构建并返回UTF-8字符  
+    return string.char(byte1, byte2, byte3)  
+end  
+  
 function hexToUtf8String(hexStr)  
     -- 去除尾部的逗号（如果存在）  
     if hexStr:sub(-1) == "," then  
         hexStr = hexStr:sub(1, -2)  
     end  
   
-    -- 分割字符串以逗号为分隔符  
-    local hexPairs = {}  
-    for pair in hexStr:gmatch("(%w+),(%w+)") do  
-        table.insert(hexPairs, pair)  
+    -- 将逗号替换为空格以分隔每个UTF-8字符的十六进制表示  
+    hexStr = hexStr:gsub(",", " ")  
+  
+    -- 分割字符串以空格为分隔符  
+    local hexChars = {}  
+    for char in hexStr:gmatch("(%w+)") do  
+        table.insert(hexChars, char)  
     end  
   
-    -- 转换十六进制对到字节并构建字符串  
+    -- 转换每个十六进制字符到UTF-8并构建字符串  
     local utf8Str = ""  
-    for _, hexPair in ipairs(hexPairs) do  
-        -- 确保每个十六进制对都能转换为数字  
-        local byte1 = tonumber(hexPair:sub(1, 2), 16)  
-        local byte2 = tonumber(hexPair:sub(4, 5), 16)  
-          
-        -- 检查转换是否成功  
-        if byte1 ~= nil and byte2 ~= nil then  
-            utf8Str = utf8Str .. string.char(byte1, byte2)  
-        else  
-            print("Invalid hex pair: " .. hexPair)  
-        end  
+    for _, hexChar in ipairs(hexChars) do  
+        utf8Str = utf8Str .. hexToUtf8Char(hexChar)  
     end  
   
     return utf8Str  
