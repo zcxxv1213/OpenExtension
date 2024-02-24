@@ -368,7 +368,7 @@ function ZeroExtensions.RequestSearchManga(query)
 		end
 		globalHelper.OnSearch(source,list)
 	end
-	local request = ZeroExtensions.GetRequest(string.format("http://www.zerobywns.com./plugin.php?id=jameson_manhua&a=search&c=index&keyword=%s&page=%s",query,1));
+	local request = ZeroExtensions.GetRequest(string.format("http://www.zerobywns.com/plugin.php?id=jameson_manhua&a=search&c=index&keyword=%s&page=%s",query,1));
 	request.Callback=callBack;
 	request:Send();
 end
