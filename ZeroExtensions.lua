@@ -370,26 +370,25 @@ function ZeroExtensions.RequestSearchManga(query)
 	end
 	print(query)
 	print(globalHelper.GetCurrentSearchText())
-	
+ 
 	local utf8String = hexToUtf8String(globalHelper.GetCurrentSearchText())  
 	print(utf8String)
 	local request = ZeroExtensions.GetRequest(string.format("http://www.zerobywns.com/plugin.php?id=jameson_manhua&a=search&c=index&keyword=%s&page=%s",utf8String,1));
 	request.Callback=callBack;
 	request:Send();
 end
-function hexToUtf8Char(hex)  
-    -- 确保hex是一个完整的3字节UTF-8字符（6个十六进制数字）  
-    if #hex ~= 6 then  
-        error("Invalid hex string length: " .. #hex)  
+function hexToUtf8Char(hexByte1, hexByte2)  
+    -- 将每个十六进制数字转换为一个字节  
+    local byte1 = tonumber(hexByte1, 16)  
+    local byte2 = tonumber(hexByte2, 16)  
+  
+    -- 如果任一转换失败，返回nil  
+    if byte1 == nil or byte2 == nil then  
+        return nil  
     end  
   
-    -- 将每两个十六进制数字转换为一个字节  
-    local byte1 = tonumber(hex:sub(1, 2), 16)  
-    local byte2 = tonumber(hex:sub(3, 4), 16)  
-    local byte3 = tonumber(hex:sub(5, 6), 16)  
-  
-    -- 构建并返回UTF-8字符  
-    return string.char(byte1, byte2, byte3)  
+    -- 返回由两个字节组成的字符串  
+    return string.char(byte1, byte2)  
 end  
   
 function hexToUtf8String(hexStr)  
@@ -398,19 +397,24 @@ function hexToUtf8String(hexStr)
         hexStr = hexStr:sub(1, -2)  
     end  
   
-    -- 将逗号替换为空格以分隔每个UTF-8字符的十六进制表示  
-    hexStr = hexStr:gsub(",", " ")  
-  
-    -- 分割字符串以空格为分隔符  
-    local hexChars = {}  
-    for char in hexStr:gmatch("(%w+)") do  
-        table.insert(hexChars, char)  
+    -- 按逗号分割字符串以获取每个字节对  
+    local bytePairs = {}  
+    for pair in hexStr:gmatch("(%w+),(%w+)") do  
+        table.insert(bytePairs, pair)  
     end  
   
-    -- 转换每个十六进制字符到UTF-8并构建字符串  
+    -- 转换每个字节对到UTF-8并构建字符串  
     local utf8Str = ""  
-    for _, hexChar in ipairs(hexChars) do  
-        utf8Str = utf8Str .. hexToUtf8Char(hexChar)  
+    for i = 1, #bytePairs, 2 do  
+        local hexByte1 = bytePairs[i]  
+        local hexByte2 = bytePairs[i + 1]  
+        local utf8Char = hexToUtf8Char(hexByte1, hexByte2)  
+        if utf8Char then  
+            utf8Str = utf8Str .. utf8Char  
+        else  
+            -- 如果转换失败，打印错误信息并跳过  
+            print("Invalid hex pair: " .. hexByte1 .. "," .. hexByte2)  
+        end  
     end  
   
     return utf8Str  
