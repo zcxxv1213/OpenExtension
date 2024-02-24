@@ -385,16 +385,23 @@ function hexToUtf8String(hexStr)
   
     -- 分割字符串以逗号为分隔符  
     local hexPairs = {}  
-    for pair in hexStr:gmatch("(%w+),%w+") do  
+    for pair in hexStr:gmatch("(%w+),(%w+)") do  
         table.insert(hexPairs, pair)  
     end  
   
     -- 转换十六进制对到字节并构建字符串  
     local utf8Str = ""  
     for _, hexPair in ipairs(hexPairs) do  
-        local byte1 = tonumber(hexParts[i], 16)  
-        local byte2 = tonumber(hexParts[i + 1], 16) 
-        utf8Str = utf8Str .. string.char(byte1, byte2)  
+        -- 确保每个十六进制对都能转换为数字  
+        local byte1 = tonumber(hexPair:sub(1, 2), 16)  
+        local byte2 = tonumber(hexPair:sub(4, 5), 16)  
+          
+        -- 检查转换是否成功  
+        if byte1 ~= nil and byte2 ~= nil then  
+            utf8Str = utf8Str .. string.char(byte1, byte2)  
+        else  
+            print("Invalid hex pair: " .. hexPair)  
+        end  
     end  
   
     return utf8Str  
