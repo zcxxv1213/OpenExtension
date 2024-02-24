@@ -374,9 +374,9 @@ function ZeroExtensions.RequestSearchManga(query)
 	print(hex)
 	local utf8String = hexStringToUtf8(hex)  
 	if utf8String then  
-		print(utf8String) -- 输出转换后的UTF-8字符串  
+		print("Converted UTF-8 string:", utf8String) -- 输出转换后的UTF-8字符串  
 	else  
-		print(errorMessage) -- 输出错误信息  
+		print("Error:", errorMessage) -- 输出错误信息  
 	end
 	print(utf8String)
 	local request = ZeroExtensions.GetRequest(string.format("http://www.zerobywns.com/plugin.php?id=jameson_manhua&a=search&c=index&keyword=%s&page=%s",utf8String,1));
@@ -384,13 +384,18 @@ function ZeroExtensions.RequestSearchManga(query)
 	request:Send();
 end
 function hexStringToUtf8(hexStr)  
+    -- 输出调试信息  
+    print("Original hex string:", hexStr)  
+  
     -- 去除字符串中可能存在的空格和尾部逗号  
     hexStr = hexStr:gsub("%s", ""):gsub(",$", "")  
+    -- 输出处理后的字符串  
+    print("Processed hex string:", hexStr)  
   
     -- 初始化结果字符串  
     local utf8Str = ""  
   
-    -- 检查字符串长度是否为偶数，因为每个字节对需要两个十六进制数字  
+    -- 检查字符串长度是否为偶数  
     if #hexStr % 2 ~= 0 then  
         return nil, "Invalid hex string: odd number of characters"  
     end  
@@ -401,16 +406,19 @@ function hexStringToUtf8(hexStr)
         local byte1 = hexStr:sub(i, i)  
         local byte2 = hexStr:sub(i + 1, i + 1)  
   
+        -- 输出提取的字节对  
+        print("Byte pair:", byte1, byte2)  
+  
         -- 将这两个十六进制数字转换成字节  
         local byteValue = tonumber(byte1 .. byte2, 16)  
   
-        -- 如果转换成功，则添加到结果字符串中  
-        if byteValue then  
-            utf8Str = utf8Str .. string.char(byteValue)  
-        else  
-            -- 如果转换失败，返回错误  
+        -- 检查转换是否成功  
+        if not byteValue then  
             return nil, "Invalid hex pair: " .. byte1 .. byte2  
         end  
+  
+        -- 如果转换成功，则添加到结果字符串中  
+        utf8Str = utf8Str .. string.char(byteValue)  
     end  
   
     -- 返回转换后的UTF-8字符串  
