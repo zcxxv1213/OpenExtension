@@ -373,6 +373,11 @@ function ZeroExtensions.RequestSearchManga(query)
 	local hex = globalHelper.GetCurrentSearchText():gsub(",$", "") 
 	print(hex)
 	local utf8String = hexStringToUtf8(hex)  
+	if utf8String then  
+		print(utf8String) -- 输出转换后的UTF-8字符串  
+	else  
+		print(errorMessage) -- 输出错误信息  
+	end
 	print(utf8String)
 	local request = ZeroExtensions.GetRequest(string.format("http://www.zerobywns.com/plugin.php?id=jameson_manhua&a=search&c=index&keyword=%s&page=%s",utf8String,1));
 	request.Callback=callBack;
