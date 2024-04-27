@@ -113,7 +113,7 @@ function ZeroExtensions.Login(mail,pass)
 		print(loginHashResult,loginFormhash)
 	end
 	print(1)
-	local request = ZeroExtensions.GetRequest("http://www.zerobywns.com/member.php?mod=logging&action=login&infloat=yes&frommessage&inajax=1&ajaxtarget=messagelogin");
+	local request = ZeroExtensions.GetRequest("http://www.zerobyw24.com/member.php?mod=logging&action=login&infloat=yes&frommessage&inajax=1&ajaxtarget=messagelogin");
 	request.Callback=callBack;
 	request:Send();
 	return request;
@@ -166,22 +166,22 @@ function ZeroExtensions.DoLogin(mail,pass,loginHashResult,loginFormhash)
 	mangaTextureRequest:AddField("questionid","0")
 	mangaTextureRequest:AddField("answer","")
 
-	mangaTextureRequest:AddField("referer","http://www.zerobywns.com/home.php?mod=spacecp&ac=usergroup")
+	mangaTextureRequest:AddField("referer","http://www.zerobyw24.com/home.php?mod=spacecp&ac=usergroup")
 	mangaTextureRequest:SetHeader("Content-Type", "application/x-www-form-urlencoded");
 	mangaTextureRequest:SetHeader("Content-Length", "178");
 	mangaTextureRequest:SetHeader("User-Agent","okhttp/3.8.1");
 	mangaTextureRequest:SetHeader("Cookie","Ckng_2132_sid=YgvGIe; Ckng_2132_saltkey=Fw1BW1QJ; Ckng_2132_lastvisit=1682344319; Ckng_2132__refer=%252Fhome.php%253Fmod%253Dspacecp%2526ac%253Dusergroup; Ckng_2132_sendmail=1; Ckng_2132_lastact=1682347919%09member.php%09logging");
-	mangaTextureRequest:SetHeader("Host","www.zerobywns.com");
-	mangaTextureRequest:SetHeader("Origin","www.zerobywns.com");
+	mangaTextureRequest:SetHeader("Host","www.zerobyw24.com");
+	mangaTextureRequest:SetHeader("Origin","www.zerobyw24.com");
 
-	mangaTextureRequest:SetHeader("referer", "http://www.zerobywns.com/home.php?mod=spacecp&ac=usergroup");
-	local url = string.format("http://www.zerobywns.com/member.php?mod=logging&action=login&loginsubmit=yes&frommessage&loginhash=%s&inajax=1",loginHashResult)
+	mangaTextureRequest:SetHeader("referer", "http://www.zerobyw24.com/home.php?mod=spacecp&ac=usergroup");
+	local url = string.format("http://www.zerobyw24.com/member.php?mod=logging&action=login&loginsubmit=yes&frommessage&loginhash=%s&inajax=1",loginHashResult)
 	local uri = mUri(url);
 	print(url)
 	mangaTextureRequest.Uri = uri;
 	local jsonTable = {
 		formhash = loginFormhash,
-		referer= "http://www.zerobywns.com/home.php?mod=spacecp&ac=usergroup",
+		referer= "http://www.zerobyw24.com/home.php?mod=spacecp&ac=usergroup",
 		loginfield =  "username",
 		username = mail ,
 		password = pass ,
@@ -297,8 +297,8 @@ function ZeroExtensions.RequestMangaDetail(url)
 		tempChapter.data:Reverse();
 		globalHelper.OnMangaDetailPhraseComplete(detailData)
 	end
-	print(string.format("http://www.zerobywns.com%s",url))
-	local request = ZeroExtensions.GetRequest(string.format("http://www.zerobywns.com%s",url));
+	print(string.format("http://www.zerobyw24.com%s",url))
+	local request = ZeroExtensions.GetRequest(string.format("http://www.zerobyw24.com%s",url));
 	request.Callback=callBack;
 	request:Send();
 end
@@ -326,8 +326,8 @@ function ZeroExtensions.RequestMangaPageList(url,detail,chapterDa)
 		end
 		globalHelper.OnMangaPagesPhraseComplete(url,tempData,detail,chapterDa)
 	end
-	print(string.format("http://www.zerobywns.com%s",url))
-	local request = ZeroExtensions.GetRequest(string.format("http://www.zerobywns.com%s",url));
+	print(string.format("http://www.zerobyw24.com%s",url))
+	local request = ZeroExtensions.GetRequest(string.format("http://www.zerobyw24.com%s",url));
 	request.Callback=callBack;
 	request:Send();
 end
@@ -368,18 +368,8 @@ function ZeroExtensions.RequestSearchManga(query)
 		end
 		globalHelper.OnSearch(source,list)
 	end
-	print(query)
-	print(globalHelper.GetCurrentSearchText())
-	local hex = globalHelper.GetCurrentSearchText():gsub(",$", "") 
-	print(hex)
-	local utf8String = hexToUtf8(hex)  
-	if utf8String then  
-		print("Converted UTF-8 string:", utf8String) -- 输出转换后的UTF-8字符串  
-	else  
-		print("Error:", errorMessage) -- 输出错误信息  
-	end
-	print("女子")
-	local request = ZeroExtensions.GetRequest(string.format("http://www.zerobywns.com/plugin.php?id=jameson_manhua&a=search&c=index&keyword=%s&page=%s","女子",1));
+
+	local request = ZeroExtensions.GetRequest(string.format("http://www.zerobyw24.com/plugin.php?id=jameson_manhua&a=search&c=index&keyword=%s&page=%s",query,1));
 	request.Callback=callBack;
 	request:Send();
 end
@@ -394,27 +384,21 @@ function hexToUtf8(hexStr)
   
     return utf8Str  
 end  
-  
--- 示例使用  
-local hexStr = "E5,A5,B3,E5,AD,90" -- 十六进制字符串  
-local utf8String = hexToUtf8(hexStr) -- 调用函数进行转换  
-  
-print(utf8String) -- 输出转换后的UTF-8字符串
 function ZeroExtensions.GetGenreTable()
 	return {
-		First = "http://www.zerobywns.com/plugin.php?id=jameson_manhua&c=index&a=ku&&page=%s",
-		卖肉 = "http://www.zerobywns.com/plugin.php?id=jameson_manhua&c=index&a=ku&category_id=1&page=%s",
-		日常 = "http://www.zerobywns.com/plugin.php?id=jameson_manhua&c=index&a=ku&category_id=32&page=%s",
-		后宫 = "http://www.zerobywns.com/plugin.php?id=jameson_manhua&c=index&a=ku&category_id=6&page=%s",
-		搞笑 = "http://www.zerobywns.com/plugin.php?id=jameson_manhua&c=index&a=ku&category_id=13&page=%s",
-		爱情 = "http://www.zerobywns.com/plugin.php?id=jameson_manhua&c=index&a=ku&category_id=31&page=%s",
-		冒险 = "http://www.zerobywns.com/plugin.php?id=jameson_manhua&c=index&a=ku&category_id=22&page=%s",
-		奇幻 = "http://www.zerobywns.com/plugin.php?id=jameson_manhua&c=index&a=ku&category_id=23&page=%s",
-		战斗 = "http://www.zerobywns.com/plugin.php?id=jameson_manhua&c=index&a=ku&category_id=26&page=%s",
-		体育 = "http://www.zerobywns.com/plugin.php?id=jameson_manhua&c=index&a=ku&category_id=29&page=%s",
-		机战 = "http://www.zerobywns.com/plugin.php?id=jameson_manhua&c=index&a=ku&category_id=34&page=%s",
-		职业 = "http://www.zerobywns.com/plugin.php?id=jameson_manhua&c=index&a=ku&category_id=35&page=%s",
-		汉化组跟上，不再更新 = "http://www.zerobywns.com/plugin.php?id=jameson_manhua&c=index&a=ku&category_id=36&page=%s",
+		First = "http://www.zerobyw24.com/plugin.php?id=jameson_manhua&c=index&a=ku&&page=%s",
+		卖肉 = "http://www.zerobyw24.com/plugin.php?id=jameson_manhua&c=index&a=ku&category_id=1&page=%s",
+		日常 = "http://www.zerobyw24.com/plugin.php?id=jameson_manhua&c=index&a=ku&category_id=32&page=%s",
+		后宫 = "http://www.zerobyw24.com/plugin.php?id=jameson_manhua&c=index&a=ku&category_id=6&page=%s",
+		搞笑 = "http://www.zerobyw24.com/plugin.php?id=jameson_manhua&c=index&a=ku&category_id=13&page=%s",
+		爱情 = "http://www.zerobyw24.com/plugin.php?id=jameson_manhua&c=index&a=ku&category_id=31&page=%s",
+		冒险 = "http://www.zerobyw24.com/plugin.php?id=jameson_manhua&c=index&a=ku&category_id=22&page=%s",
+		奇幻 = "http://www.zerobyw24.com/plugin.php?id=jameson_manhua&c=index&a=ku&category_id=23&page=%s",
+		战斗 = "http://www.zerobyw24.com/plugin.php?id=jameson_manhua&c=index&a=ku&category_id=26&page=%s",
+		体育 = "http://www.zerobyw24.com/plugin.php?id=jameson_manhua&c=index&a=ku&category_id=29&page=%s",
+		机战 = "http://www.zerobyw24.com/plugin.php?id=jameson_manhua&c=index&a=ku&category_id=34&page=%s",
+		职业 = "http://www.zerobyw24.com/plugin.php?id=jameson_manhua&c=index&a=ku&category_id=35&page=%s",
+		汉化组跟上，不再更新 = "http://www.zerobyw24.com/plugin.php?id=jameson_manhua&c=index&a=ku&category_id=36&page=%s",
 	};
 end
 
